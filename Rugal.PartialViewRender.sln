@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rugal.PartialViewRender", "Rugal.PartialViewRender\Rugal.PartialViewRender.csproj", "{BDB91D25-0420-4FB5-8E31-7C2E1527D15D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rugal.PartialViewRender.Js", "Rugal.PartialViewRender.Js\Rugal.PartialViewRender.Js.csproj", "{AA7837BD-B299-41C6-8213-32BB16CA3B07}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDB91D25-0420-4FB5-8E31-7C2E1527D15D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDB91D25-0420-4FB5-8E31-7C2E1527D15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDB91D25-0420-4FB5-8E31-7C2E1527D15D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDB91D25-0420-4FB5-8E31-7C2E1527D15D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA7837BD-B299-41C6-8213-32BB16CA3B07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA7837BD-B299-41C6-8213-32BB16CA3B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA7837BD-B299-41C6-8213-32BB16CA3B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA7837BD-B299-41C6-8213-32BB16CA3B07}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5AAD1AB1-A1D3-4162-B01C-F6B650767D56}
+	EndGlobalSection
+EndGlobal

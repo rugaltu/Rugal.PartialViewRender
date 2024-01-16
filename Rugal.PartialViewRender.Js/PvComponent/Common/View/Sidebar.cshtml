@@ -1,0 +1,17 @@
+﻿@using Rugal.PartialViewRender.Model
+@model PvOption
+@{
+    var PvName = Model.PvName;
+}
+
+<section pv-name="@PvName">
+    <div class="p-3 bg-success">
+        <div pv-template="Content">
+        </div>
+
+        <button class="btn btn-primary">查詢</button>
+
+        <div pv-template="Footer">
+        </div>
+    </div>
+</section>
