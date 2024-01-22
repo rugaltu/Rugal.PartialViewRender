@@ -10,7 +10,7 @@ namespace Rugal.PartialViewRender.Extention
             where TViewEnum : Enum
         {
             var ViewName = typeof(TViewEnum).Name;
-            var ViewPath = Configuration[$"PvReader:{ViewName}"];
+            var ViewPath = Configuration[$"PvRender:{ViewName}"];
 
             Services.AddHttpContextAccessor();
             Services.AddSingleton(Provider =>

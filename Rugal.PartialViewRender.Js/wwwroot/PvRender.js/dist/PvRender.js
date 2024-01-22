@@ -1,4 +1,4 @@
-window.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const AllPvDom = document.querySelectorAll('[pv-name]');
     AllPvDom.forEach(PvDom => {
         let PvName = PvDom.getAttribute('pv-name');
