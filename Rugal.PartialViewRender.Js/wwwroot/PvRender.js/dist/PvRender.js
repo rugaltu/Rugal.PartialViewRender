@@ -1,21 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const AllPvDom = document.querySelectorAll('[pv-name]');
-    AllPvDom.forEach(PvDom => {
-        let PvName = PvDom.getAttribute('pv-name');
-        let PvNameQuery = `[pv-name="${PvName}"]`;
+    const AllPvSlot = document.querySelectorAll('[pv-slot]');
+    AllPvSlot.forEach(PvSlot => {
+        let PvName = PvSlot.getAttribute('pv-slot');
+        let PvNames = PvName.split('.');
+        SetPvTepmlate(PvNames, PvSlot);
+        PvSlot.remove();
+    });
 
-        let AllPvTemplate = document.querySelectorAll(`${PvNameQuery} [pv-template]`);
-        AllPvTemplate.forEach(PvTemplate => {
-            let TemplateName = PvTemplate.getAttribute('pv-template');
-            let TemplateQuery = `[pv-template="${TemplateName}"]`;
-
-            let SlotQuery = `[pv-slot="${PvName}.${TemplateName }"]`;
-            let GetSlotView = document.querySelector(SlotQuery);
-            if (GetSlotView == null)
-                return;
-
-            let GetTemplate = document.querySelector(`${PvNameQuery} ${TemplateQuery}`);
-            GetTemplate.innerHTML = GetSlotView.innerHTML;
-        });
+    const AllPvAttr = document.querySelectorAll('[pv-attr]');
+    AllPvAttr.forEach(PvAttr => {
+        let PvName = PvAttr.getAttribute('pv-attr');
+        let PvNames = PvName.split('.');
+        SetPvAttr(PvNames, PvAttr);
+        PvAttr.remove();
     });
 });
+function SetPvTepmlate(PvNames, PvSlot) {
+    let LastName = PvNames.pop();
+    let AllQuerys = PvNames
+        .map(Item => `[pv-name="${Item}"]`);
+
+    AllQuerys.push(`[pv-template="${LastName}"]`);
+    let QueryResult = AllQuerys.join(' ');
+    let FindPv = document.querySelector(QueryResult);
+    if (FindPv == null)
+        return;
+
+    FindPv.innerHTML = PvSlot.innerHTML;
+}
+
+function SetPvAttr(PvNames, PvSlot) {
+    let AllQuerys = PvNames
+        .map(Item => `[pv-name="${Item}"]`);
+
+    let QueryResult = AllQuerys.join(' ');
+    let FindPv = document.querySelector(QueryResult);
+
+    for (let Item of PvSlot.attributes) {
+        if (Item.name.toLowerCase().includes('pv-'))
+            continue;
+        FindPv.setAttribute(Item.name, Item.value);
+    }
+}

@@ -3,5 +3,6 @@
     public enum PvCommon
     {
         Sidebar,
+        MenuItem
     }
 }
