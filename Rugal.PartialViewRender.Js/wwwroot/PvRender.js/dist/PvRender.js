@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let PvName = PvSlot.getAttribute('pv-slot');
         let PvNames = PvName.split('.');
         SetPvTepmlate(PvNames, PvSlot);
-        PvSlot.remove();
     });
 
     const AllPvAttr = document.querySelectorAll('[pv-attr]');
@@ -12,8 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let PvName = PvAttr.getAttribute('pv-attr');
         let PvNames = PvName.split('.');
         SetPvAttr(PvNames, PvAttr);
-        PvAttr.remove();
     });
+
+    AllPvSlot.forEach(Item => Item.remove());
+    AllPvAttr.forEach(Item => Item.remove());
 });
 function SetPvTepmlate(PvNames, PvSlot) {
     let LastName = PvNames.pop();
