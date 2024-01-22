@@ -54,6 +54,9 @@ namespace Rugal.PartialViewRender.Service
 
         private static string ConvertViewName(string ViewPath, string ViewName)
         {
+            if (ViewName.Contains('\\') || ViewName.Contains('/'))
+                return ViewName;
+
             if (!ViewName.Contains(".cshtml", StringComparison.CurrentCultureIgnoreCase))
                 ViewName = $"{ViewName}.cshtml";
 
