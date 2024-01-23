@@ -1,10 +1,9 @@
 ﻿@using Rugal.PartialViewRender.Model
 @model PvOption
 
-<section pv-name="@Model.PvName" style="background-color:red;" class="px-3">
-    <div pv-name="Header" pv-template="Header">
-        <button pv-name="Button" class="btn">ASD</button>
-        Header
+<section pv-name="@Model.PvName">
+    <div pv-name="Content" class="p-3 bg-primary">
+        Content
     </div>
-    123
+    <button pv-name="Button" class="btn">Menu按鈕</button>
 </section>

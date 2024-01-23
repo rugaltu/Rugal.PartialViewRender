@@ -2,28 +2,22 @@
     ViewData["Title"] = "Home Page";
 }
 
-@CommonRender.From(PvCommon.Sidebar, "test")
-
-<!--Sidebar Slot-->
-<section>
-    <template pv-slot="test.Content">
-        asd
-    </template>
-    <template pv-slot="test.Footer">
-        Set Footer ASdASD
+<section pv-name="Test">
+    @CommonRender.From(PvCommon.Sidebar)
+    <!--Sidebar Slot-->
+    <template pv-slot="Sidebar.Content">
+        @CommonRender.From(PvCommon.MenuItem)
     </template>
 
-    <template pv-attr="test"
-              style="background-color:aqua;"></template>
-
-    <template pv-attr="test.MenuItem"
-              style="background-color:blueviolet;"
-              class="px-1"></template>
-
-    <template pv-attr="test.MenuItem.Header"
-              style="background-color:green;"></template>
-
-    <template pv-attr="test.MenuItem.Header.Button"
-              style="background-color:brown;"></template>
-
+    <template pv-slot="Sidebar.Content.MenuItem.Content" pv-out="Content">
+        123
+    </template>
 </section>
+
+<template pv-name="Test.Content">
+
+</template>
+
+<template pv-name="Test.Content">
+
+</template>

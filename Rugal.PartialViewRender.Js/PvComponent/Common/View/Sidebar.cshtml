@@ -1,17 +1,11 @@
 ﻿@using Rugal.PartialViewRender.Model
 @model PvOption
 
-<section pv-name="@Model.PvName">
-    <div class="p-3">
-        @CommonRender.From(PvCommon.MenuItem)
+<section pv-name="@Model.PvName" class="bg-success">
+    Sidebar
+    <div class="p-3 border-2 border-dark">
+        <div pv-name="Content">
 
-        <div pv-template="Content">
-        </div>
-
-        <button class="btn btn-primary">查詢</button>
-
-        <div pv-template="Footer">
-            
         </div>
     </div>
 </section>
