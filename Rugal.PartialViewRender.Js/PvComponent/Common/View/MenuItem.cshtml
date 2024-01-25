@@ -1,9 +1,13 @@
 ﻿@using Rugal.PartialViewRender.Model
 @model PvOption
 
+
 <section pv-name="@Model.PvName">
     <div pv-name="Content" class="p-3 bg-primary">
-        Content
+        MenuItem Content
+        <div pv-name="Body">
+        </div>
     </div>
     <button pv-name="Button" class="btn">Menu按鈕</button>
 </section>
+
