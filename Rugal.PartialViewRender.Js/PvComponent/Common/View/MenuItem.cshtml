@@ -2,10 +2,13 @@
 @model PvOption
 
 
-<section pv-name="@Model.PvName">
-    <div pv-name="Content" class="p-3 bg-primary">
+<section pv-name="@Model.PvName" pv-out="@Model.PvName">
+    <div pv-name="Content"
+         class="p-3 bg-primary">
         MenuItem Content
-        <div pv-name="Body">
+        <div pv-name="Body"
+             pv-out="Body">
+             Body
         </div>
     </div>
     <button pv-name="Button" class="btn">Menu按鈕</button>

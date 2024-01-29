@@ -4,12 +4,19 @@
 
 <section>
     @CommonRender.From(PvCommon.Sidebar)
-    <template pv-slot="Sidebar.Content.Body"
-              pv-out="Body"
-              class="bg-warning">
-        @CommonRender.From(PvCommon.MenuItem)
+    <template pv-slot="Sidebar"
+              class="bg-info">
+        <template pv-in="SubTitle">
+            @CommonRender.From(PvCommon.MenuItem)
+        </template>
+        <template pv-in="MenuItem.Body">
+            12312312
+        </template>
     </template>
-    <template pv-in="Sidebar.Body" class=""></template>
+   
+    
+
+    @* Sidebar.Body *@
 
     <!--Sidebar Slot-->
     @* <template pv-slot="Sidebar.Content">

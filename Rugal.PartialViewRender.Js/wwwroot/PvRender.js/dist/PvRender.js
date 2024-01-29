@@ -41,17 +41,14 @@ class PartialView {
         if (PvSlot.attributes.length > 1)
             this.SetPvAttr(PvSlot, PvTarget);
 
-        if (PvSlot.innerHTML != '') {
-            PvTarget.innerHTML = PvSlot.innerHTML;
-            this.ReNameInnerPvName(PvTarget);
-        }
+        this.SetPvInner(PvSlot, PvTarget);
     }
 
     SetPvIn(PvPath, PvIn) {
         let Paths = PvPath.split('.');
-        let PvName = Paths.shift();
-        let PvOut = Paths.join('.');
-        let QueryResult = `[pv-name="${PvName}"] [pv-out="${PvOut}"]`;
+        let PvName = `[pv-name="${Paths.shift()}"]`;
+        let PvOut = Paths.map(Item => `[pv-out="${Item}"]`).join(' ');
+        let QueryResult = `${PvName} ${PvOut}`;
         let PvTarget = document.querySelector(QueryResult);
         if (PvTarget == null)
             return;
@@ -59,10 +56,7 @@ class PartialView {
         if (PvIn.attributes.length > 1)
             this.SetPvAttr(PvIn, PvTarget);
 
-        if (PvIn.innerHTML != '') {
-            PvTarget.innerHTML = PvIn.innerHTML;
-            this.ReNameInnerPvName(PvTarget);
-        }
+        this.SetPvInner(PvIn, PvTarget);
     }
 
     SetPvAttr(PvSource, PvTarget) {
@@ -109,6 +103,45 @@ class PartialView {
                 let JoinChar = AttrName == 'style' ? '; ' : ' ';
                 let SetAttrResult = AttrValues.join(JoinChar);
                 PvTarget.setAttribute(AttrName, SetAttrResult);
+            }
+        }
+    }
+
+    SetPvInner(PvSource, PvTarget) {
+        if (PvSource == null || PvTarget == null)
+            return;
+
+        if (PvSource.innerHTML == '' || PvSource.innerHTML == null)
+            return;
+
+        let SourceTemplate = PvSource.content.querySelectorAll('template');
+        if (SourceTemplate.length == 0) {
+            PvTarget.innerHTML = PvSource.innerHTML;
+            this.ReNameInnerPvName(PvTarget);
+        }
+        else {
+            for (let Item of SourceTemplate) {
+                let InnerPvIn = Item.getAttribute('pv-in');
+                let InnerPvSlot = Item.getAttribute('pv-slot');
+
+                let GetTarget;
+                if (InnerPvIn != null) {
+                    let FindOut = InnerPvIn
+                        .split('.')
+                        .map(Val => `[pv-out="${Val}"]`)
+                        .join(' ');
+                    GetTarget = PvTarget.querySelector(FindOut);
+                }
+                else if (InnerPvSlot != null) {
+                    let TargetPvName = PvTarget.getAttribute('pv-name');
+                    let FindPvName = `${TargetPvName}.${InnerPvSlot}`;
+                    GetTarget = PvTarget.querySelector(`[pv-name="${FindPvName}"]`);
+                }
+
+                if (GetTarget != null) {
+                    this.SetPvAttr(Item, GetTarget);
+                    this.SetPvInner(Item, GetTarget);
+                }
             }
         }
     }

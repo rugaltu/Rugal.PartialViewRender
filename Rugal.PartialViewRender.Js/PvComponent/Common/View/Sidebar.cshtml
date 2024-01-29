@@ -1,15 +1,23 @@
 ﻿@using Rugal.PartialViewRender.Model
 @model PvOption
 
-<section pv-name="@Model.PvName" class="p-5" style="background-color:red;">
-    Sidebar
-    <div class="p-3 border-2 border-dark">
-        <div pv-name="Content">
-            <div pv-name="Title" style="background-color:red;">
-                標題
-            </div>
-            <div pv-name="Body">
-                 
+<section pv-name="@Model.PvName">
+    <div class="p-5">
+        Sidebar
+        <div class="p-3 border-2 border-dark">
+            <div pv-name="Content">
+                <div pv-name="Title" pv-out="Title">
+                    Title
+                </div>
+                <div pv-name="Body" pv-out="Body">
+                    <span pv-name="BodyContent">Body</span>
+                    <div pv-name="Text" pv-out="Text">
+                        Text
+                        <div pv-name="SubTitle" pv-out="SubTitle">
+                            SubTitle
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
