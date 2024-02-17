@@ -3,32 +3,33 @@
 }
 
 <section>
-    @CommonRender.From(PvCommon.Sidebar)
-    <template pv-slot="Sidebar"
-              class="bg-info">
-        <template pv-in="SubTitle">
-            @CommonRender.From(PvCommon.MenuItem)
+    <div>
+        <div pv-name="A">
+            A
+            <div pv-name="B" pv-out>
+                B
+            </div>
+        </div>
+        <template pv-slot="A.B">
+            BB
+            <div pv-name="C" pv-out>
+                CC
+            </div>
         </template>
-        <template pv-in="MenuItem.Body">
-            12312312
+        <template pv-slot="A">
+            <template pv-in="B.C">
+                CCC
+                <div pv-name="D">
+                    DDD
+                </div>
+            </template>
         </template>
-    </template>
-   
-    
 
-    @* Sidebar.Body *@
+        <template pv-in="A.B.C">
+            <template pv-slot="D">
+                DDDD
+            </template>
+        </template>
 
-    <!--Sidebar Slot-->
-    @* <template pv-slot="Sidebar.Content">
-    @CommonRender.From(PvCommon.MenuItem)
-    </template> *@
-
-    @* <template pv-slot="Sidebar.Content.MenuItem.Content" pv-out="Content">
-    123
-    </template> *@
+    </div>
 </section>
-
-<template pv-attr="Sidebar" style="">
-
-
-</template>
