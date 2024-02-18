@@ -37,7 +37,11 @@ class PvNode {
         return Children;
     }
     get Attrs() {
-        return this.Element.attributes;
+        return [...this.Element.attributes];
+    }
+    get AttrsNotPv() {
+        let Exp = new RegExp(/^pv-/);
+        return this.Attrs.filter(Item => !Exp.test(Item.name));
     }
     get Paths() {
         return this.Name.split('.');
@@ -83,6 +87,12 @@ class PvNode {
     }
     get HasNodes() {
         return this.Nodes.length > 0;
+    }
+    get HasAttrs() {
+        return this.Attrs.length > 0;
+    }
+    get HasAttrsNotPv() {
+        return this.AttrsNotPv.length > 0;
     }
     get IsTemplate() {
         return this.Element.tagName == 'TEMPLATE';
@@ -239,7 +249,7 @@ class PvNode {
 //#endregion
 
 /**
- *  PvRender.js v1.1.0
+ *  PvRender.js v1.1.1
  *  From Rugal Tu
  * */
 class PvRender {
@@ -356,6 +366,7 @@ class PvRender {
         let HasContentNode = ContentNodes.length > 0;
         let EmptyNodes = !TargetNode.HasNodes && TargetNode.HasContent;
         let HasTextNodes = TargetNode.HasTextNodes;
+
         if (HasContentNode || EmptyNodes || HasTextNodes) {
             let FindNode = this._FindNode(TargetNode);
             if (FindNode != null) {
@@ -367,6 +378,10 @@ class PvRender {
                 this._SetNodeAttr(FindNode, TargetNode);
                 this._RCS_BuildChildren(FindNode);
             }
+        }
+        else if (TargetNode.HasAttrsNotPv) {
+            let FindNode = this._FindNode(TargetNode);
+            this._SetNodeAttr(FindNode, TargetNode);
         }
 
         for (let Item of TargetNode.NextTree(...PvTypes))
