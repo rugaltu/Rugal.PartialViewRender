@@ -51,7 +51,6 @@ namespace Rugal.PartialViewRender.Service
             await GetView.View.RenderAsync(NewViewContext);
             return new HtmlString(Writer.ToString());
         }
-
         private static string ConvertViewName(string ViewPath, string ViewName)
         {
             if (ViewName.Contains('\\') || ViewName.Contains('/'))
@@ -69,9 +68,11 @@ namespace Rugal.PartialViewRender.Service
         where TView : Enum
     {
         public string ViewPath { get; private set; }
-        public PvRender(string _ViewPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
+        public string JsPath { get; private set; }
+        public PvRender(string _ViewPath, string _JsPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
         {
             ViewPath = _ViewPath.TrimEnd('/', '\\');
+            JsPath = _JsPath.TrimEnd('/', '\\');
         }
         public Task<IHtmlContent> FromAsync(TView ViewName, string PvName = null)
         {
@@ -79,19 +80,14 @@ namespace Rugal.PartialViewRender.Service
             var Option = NewOption(Item =>
             {
                 Item.PvName = PvName;
+                Item.JsPath = JsPath;
             });
             return RenderAsync(ViewName.ToString(), ViewPath, Option);
         }
         public IHtmlContent From(TView ViewName, string PvName = null)
         {
-            PvName ??= ViewName.ToString();
-            var Option = NewOption(Item =>
-            {
-                Item.PvName = PvName;
-            });
-            return RenderAsync(ViewName.ToString(), ViewPath, Option).Result;
+            return FromAsync(ViewName, PvName).Result;
         }
-
         private static PvOption NewOption(Action<PvOption> OptionFunc = null)
         {
             var Result = new PvOption();
