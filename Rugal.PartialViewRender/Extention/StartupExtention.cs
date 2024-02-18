@@ -17,7 +17,7 @@ namespace Rugal.PartialViewRender.Extention
             Services.AddHttpContextAccessor();
             Services.AddSingleton(Provider =>
             {
-                var Reader = new PvRender<TViewEnum>(ViewPath, Provider);
+                var Reader = new PvRender<TViewEnum>(ViewPath, JsPath, Provider);
                 return Reader;
             });
             return Services;
