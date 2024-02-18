@@ -1,6 +1,6 @@
 ﻿namespace Rugal.PartialViewRender.Js.ViewComponent.Common
 {
-    public enum PvCommon
+    public enum Common
     {
         Sidebar,
         MenuItem

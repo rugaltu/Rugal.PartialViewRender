@@ -8,7 +8,7 @@ builder.Services
     .AddRazorRuntimeCompilation();
 
 builder.Services
-    .AddPvRender<PvCommon>(builder.Configuration);
+    .AddPvRender<Common>(builder.Configuration);
 
 var app = builder.Build();
 app.UseExceptionHandler("/Home/Error");
