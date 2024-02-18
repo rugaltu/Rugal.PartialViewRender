@@ -68,11 +68,9 @@ namespace Rugal.PartialViewRender.Service
         where TView : Enum
     {
         public string ViewPath { get; private set; }
-        public string JsPath { get; private set; }
-        public PvRender(string _ViewPath, string _JsPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
+        public PvRender(string _ViewPath,  IServiceProvider _ServiceProvider) : base(_ServiceProvider)
         {
             ViewPath = _ViewPath.TrimEnd('/', '\\');
-            JsPath = _JsPath.TrimEnd('/', '\\');
         }
         public Task<IHtmlContent> FromAsync(TView ViewName, string PvName = null)
         {
@@ -80,7 +78,6 @@ namespace Rugal.PartialViewRender.Service
             var Option = NewOption(Item =>
             {
                 Item.PvName = PvName;
-                Item.JsPath = JsPath;
             });
             return RenderAsync(ViewName.ToString(), ViewPath, Option);
         }
