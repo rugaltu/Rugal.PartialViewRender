@@ -195,8 +195,12 @@ class PvNode {
     }
     SetContentNode(...SourceNodes) {
         this.Element.innerHTML = null;
-        for (let Item of SourceNodes)
-            this.Element.append(Item.Element);
+        for (let Item of SourceNodes) {
+            if (!this.IsTemplate)
+                this.Element.append(Item.Element);
+            else
+                this.Element.innerHTML += Item.FullContent;
+        }
         return this;
     }
 
@@ -249,7 +253,7 @@ class PvNode {
 //#endregion
 
 /**
- *  PvRender.js v1.1.1
+ *  PvRender.js v1.1.5
  *  From Rugal Tu
  * */
 class PvRender {
@@ -376,6 +380,10 @@ class PvRender {
                     FindNode.SetContentNode(...ContentNodes);
 
                 this._SetNodeAttr(FindNode, TargetNode);
+
+                if (FindNode.IsPvSlot || FindNode.IsPvIn)
+                    this._RCS_SetTree(FindNode, PvTypes);
+
                 this._RCS_BuildChildren(FindNode);
             }
         }
@@ -391,7 +399,7 @@ class PvRender {
         let TargetPathNodes = [];
         let FindNode = TargetNode;
 
-        while (FindNode instanceof PvNode && !FindNode.IsPvName) {
+        while (FindNode instanceof PvNode && FindNode.IsPvIn || FindNode.IsPvSlot) {
             TargetPathNodes.push(FindNode);
             FindNode = FindNode?.Parent ?? this;
         }
@@ -404,18 +412,20 @@ class PvRender {
                 if (NextPathNode.IsPvSlot || FindNode instanceof PvRender) {
                     FindNode = FindNode
                         .NextTree('pv-name')
-                        .find(Item => Item.Name == NextName);
+                        .find(Item => Item.IsMatch(`pv-name="${NextName}"`));
                 }
                 else if (NextPathNode.IsPvIn) {
                     FindNode = FindNode
                         .NextTree('pv-out')
-                        .find(Item => Item.OutName == NextName);
+                        .find(Item => Item.OutName == NextName || Item.IsMatch(`pv-out="${NextName}"`));
                 }
             }
         }
         return FindNode;
     }
     _SetNodeAttr(TargetNode, SourceNode) {
+        if (TargetNode == null)
+            return;
         for (let Item of SourceNode.Attrs) {
             let AttrName = Item.name;
             let AttrValue = Item.value;
