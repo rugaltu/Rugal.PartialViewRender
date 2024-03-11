@@ -364,42 +364,36 @@ class PvRender {
         }
     }
     _RCS_SetTree(TargetNode, PvTypes) {
-        let ContentNodes = TargetNode.Nodes
-            .filter(Item => !Item.IsMatch(...PvTypes));
 
-        let HasContentNode = ContentNodes.length > 0;
-        let EmptyNodes = !TargetNode.HasNodes && TargetNode.HasContent;
-        let HasTextNodes = TargetNode.HasTextNodes;
+        let FindNode = this._FindNode(TargetNode);
+        if (FindNode == null)
+            return;
 
-        if (HasContentNode || EmptyNodes || HasTextNodes) {
-            let FindNode = this._FindNode(TargetNode);
-            if (FindNode != null) {
-                if (EmptyNodes || TargetNode.HasTextNodes)
-                    FindNode.SetContent(TargetNode);
-                else if (HasContentNode)
-                    FindNode.SetContentNode(...ContentNodes);
+        if (TargetNode.Nodes.length > 0) {
+            let ContentNodes = TargetNode.Nodes
+                .filter(Item => !Item.IsMatch(...PvTypes));
 
-                this._SetNodeAttr(FindNode, TargetNode);
-
-                if (FindNode.IsPvSlot || FindNode.IsPvIn)
-                    this._RCS_SetTree(FindNode, PvTypes);
-
-                this._RCS_BuildChildren(FindNode);
+            if (ContentNodes.length > 0)
+                FindNode.SetContentNode(...ContentNodes);
+            else {
+                for (let Item of TargetNode.NextTree(...PvTypes))
+                    this._RCS_SetTree(Item, PvTypes);
             }
         }
-        else if (TargetNode.HasAttrsNotPv) {
-            let FindNode = this._FindNode(TargetNode);
-            this._SetNodeAttr(FindNode, TargetNode);
-        }
+        else if (TargetNode.Content && TargetNode.Content != '')
+            FindNode.SetContent(TargetNode);
 
-        for (let Item of TargetNode.NextTree(...PvTypes))
+        this._SetNodeAttr(FindNode, TargetNode);
+        this._RCS_BuildChildren(FindNode);
+
+        for (let Item of FindNode.NextTree(...PvTypes))
             this._RCS_SetTree(Item, PvTypes);
     }
     _FindNode(TargetNode) {
         let TargetPathNodes = [];
         let FindNode = TargetNode;
 
-        while (FindNode instanceof PvNode && FindNode.IsPvIn || FindNode.IsPvSlot) {
+        while (FindNode instanceof PvNode && (FindNode.IsPvIn || FindNode.IsPvSlot)) {
             TargetPathNodes.push(FindNode);
             FindNode = FindNode?.Parent ?? this;
         }
