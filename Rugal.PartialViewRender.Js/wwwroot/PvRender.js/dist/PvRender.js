@@ -5,8 +5,9 @@ class PvNode {
         this.Id = this._GenerateId();
         this.PvType = _PvType;
         this.Name = null;
-        this.AbsPath = null;
         this.OutName = null;
+        this.InName = null;
+        this.SlotName = null;
 
         this.Parent = _Parent;
         this.Element = _Element;
@@ -16,6 +17,20 @@ class PvNode {
     }
 
     //#region Get Property
+    get AbsPath() {
+        let Nodes = [];
+        let FindNode = this;
+        while (FindNode instanceof PvRender == false && FindNode != null) {
+            Nodes.push(FindNode);
+            FindNode = FindNode.Parent;
+        }
+        let Result = Nodes
+            .filter(Item => Item.Name != null)
+            .reverse()
+            .map(Item => Item.Name)
+            .join('.');
+        return Result;
+    }
     get Content() {
         if (this.Element == null)
             return null;
@@ -43,9 +58,24 @@ class PvNode {
         let Exp = new RegExp(/^pv-/);
         return this.Attrs.filter(Item => !Exp.test(Item.name));
     }
-    get Paths() {
+    get NamePaths() {
+        if (this.Name == null) {
+            debugger;
+            return null;
+        }
         return this.Name.split('.');
     }
+    get InPaths() {
+        if (this.InName == null)
+            return null;
+        return this.InName.split('.');
+    }
+    get SlotPaths() {
+        if (this.SlotName == null)
+            return null;
+        return this.SlotName.split('.');
+    }
+
     get Pvs() {
         return this.NextTree('pv-name');
     }
@@ -113,16 +143,28 @@ class PvNode {
 
     //#region Init Method
     _InitName() {
-        if (this.Element == null || this.PvType == null) {
-            this.Name = null;
+        if (this.Element == null || this.PvType == null)
             return;
+
+        this.Name = this.GetAttr('pv-name');
+        if (this.IsPvIn) {
+            this.InName = this.GetAttr('pv-in');
+            if (this.Name == null || this.Name == '')
+                this.Name = this.InName;
         }
-        this.Name = this.GetAttr(this.PvType);
+
         if (this.IsPvOut) {
             this.OutName = this.GetAttr('pv-out');
             if (this.OutName == null || this.OutName == '')
                 this.OutName = this.Name;
         }
+
+        if (this.IsPvSlot) {
+            this.SlotName = this.GetAttr('pv-slot');
+            if (this.Name == null || this.Name == '')
+                this.Name = this.SlotName;
+        }
+        this.SetAttr('_NodeId', this.Id);
     }
     //#endregion
 
@@ -173,17 +215,6 @@ class PvNode {
         this._InitName();
         return this;
     }
-    WithAbsPath(..._AbsPaths) {
-
-        if (!this.IsPvName()) {
-            this._Log_CannotBeSetAbsPath();
-            return this;
-        }
-
-        this.AbsPath = _AbsPaths.join('.');
-        this.SetAttr('pv-name', this.AbsPath);
-        return this;
-    }
     //#endregion
 
     //#region Set And Get Method
@@ -196,8 +227,10 @@ class PvNode {
     SetContentNode(...SourceNodes) {
         this.Element.innerHTML = null;
         for (let Item of SourceNodes) {
-            if (!this.IsTemplate)
-                this.Element.append(Item.Element);
+            if (!this.IsTemplate) {
+                let CloneElement = Item.Element.cloneNode(true);
+                this.Element.append(CloneElement);
+            }
             else
                 this.Element.innerHTML += Item.FullContent;
         }
@@ -245,9 +278,6 @@ class PvNode {
     //#endregion
 
     //#region Log
-    _Log_CannotBeSetAbsPath() {
-        console.warn(`¡u${this.Name}¡vcannot set AbsPath, only pv-name can be set`);
-    }
     //#endregion
 }
 //#endregion
@@ -400,7 +430,12 @@ class PvRender {
 
         while (FindNode && TargetPathNodes.length > 0) {
             let NextPathNode = TargetPathNodes.pop();
-            let NextPaths = NextPathNode.Paths;
+            let NextPaths = NextPathNode.NamePaths;
+            if (NextPathNode.IsPvIn)
+                NextPaths = NextPathNode.InPaths;
+            else if (NextPathNode.IsPvSlot)
+                NextPaths = NextPathNode.SlotPaths;
+
             while (FindNode && NextPaths.length > 0) {
                 let NextName = NextPaths.shift();
                 if (NextPathNode.IsPvSlot || FindNode instanceof PvRender) {
@@ -409,8 +444,10 @@ class PvRender {
                         .find(Item => Item.IsMatch(`pv-name="${NextName}"`));
                 }
                 else if (NextPathNode.IsPvIn) {
-                    FindNode = FindNode
-                        .NextTree('pv-out')
+                    let NextNodes = FindNode
+                        .NextTree('pv-out');
+
+                    FindNode = NextNodes
                         .find(Item => Item.OutName == NextName || Item.IsMatch(`pv-out="${NextName}"`));
                 }
             }
@@ -528,7 +565,7 @@ class PvRender {
         console.warn(Message.join(' > ') + ' is not found');
     }
     _Log_UnknowAttrAction(Action) {
-        let Message = `¡u${Action}¡vis unknown attribute action`;
+        let Message = `"${Action}" is unknown attribute action`;
         console.warn(Message);
     }
     //#endregion
