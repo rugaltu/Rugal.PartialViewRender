@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.2.0
+ *  PvRender.js v1.2.1
  *  From Rugal Tu
  * */
 class PvBase {
@@ -332,7 +332,7 @@ class PvRender extends PvBase {
 
     //#region Build Tree
     _InitTree() {
-        let AllTypes = ['pv-name', 'pv-in', 'pv-slot'];
+        let AllTypes = ['pv-name', 'pv-in', 'pv-slot', 'pv-layout'];
         let AllQuery = [];
         for (let Item of AllTypes) {
             let NotInPvName = `not([pv-name] [${Item}])`;
@@ -394,7 +394,8 @@ class PvRender extends PvBase {
     //#region Set Tree
     _SetTree() {
         let QueryTypes = ['pv-slot', 'pv-in', 'pv-layout'];
-        for (let Item of this.NextTree(...QueryTypes)) {
+        let Trees = this.NextTree(...QueryTypes);
+        for (let Item of Trees) {
             this._RCS_SetTree(Item, QueryTypes);
         }
     }
