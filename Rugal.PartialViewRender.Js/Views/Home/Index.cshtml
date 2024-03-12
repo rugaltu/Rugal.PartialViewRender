@@ -3,35 +3,21 @@
 }
 
 <section>
+    <template pv-name="Layout1"
+              class="row justify-content-center"></template>
 
-    @PvCommon.From(Common.Sidebar)
-    <div>
-        <div pv-name="A">
-            A
-            <div pv-name="B" pv-out>
-                B
-            </div>
-        </div>
-        <template pv-slot="A.B">
-            BB
-            <div pv-name="C" pv-out>
-                CC
-            </div>
-        </template>
-        <template pv-slot="A">
-            <template pv-in="B.C">
-                CCC
-                <div pv-name="D">
-                    DDD
-                </div>
-            </template>
-        </template>
+    <template pv-name="Layout2"
+              pv-layout="Layout1"
+              class.add="bg-success"></template>
 
-        <template pv-in="A.B.C">
-            <template pv-slot="D">
-                DDDD
-            </template>
-        </template>
+    <template pv-name="Layout3"
+              class.add="border border-5"></template>
 
+    <div pv-name="Test" pv-layout="Layout1">
+        123
     </div>
+
+    <template pv-slot="Test"
+              pv-layout="Layout3"></template>
+
 </section>

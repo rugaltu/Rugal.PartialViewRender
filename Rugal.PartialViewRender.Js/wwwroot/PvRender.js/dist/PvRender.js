@@ -1,22 +1,55 @@
-//#region Pv Model
-class PvNode {
-    constructor(_Element, _PvType = null, _Parent = null) {
-
+/**
+ *  PvRender.js v1.1.8
+ *  From Rugal Tu
+ * */
+class PvBase {
+    constructor() {
+        this.Nodes = [];
         this.Id = this._GenerateId();
+    }
+    //#region Pv Property
+    get Pvs() {
+        return this.NextTree('pv-name');
+    }
+    get Outs() {
+        return this.NextTree('pv-name').filter(Item => Item.IsPvOut);
+    }
+    get Ins() {
+        return this.NextTree('pv-in');
+    }
+    get Slots() {
+        return this.NextTree('pv-slot');
+    }
+    get Layouts() {
+        return this.NextTree('pv-layout');
+    }
+    //#endregion
+
+    //#region Private Process
+    _GenerateId() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+    //#endregion
+}
+class PvNode extends PvBase {
+    constructor(_Element, _PvType = null, _Parent = null) {
+        super();
+
         this.PvType = _PvType;
         this.Name = null;
         this.OutName = null;
         this.InName = null;
         this.SlotName = null;
+        this.Layout = null;
 
         this.Parent = _Parent;
         this.Element = _Element;
-        this.Nodes = [];
 
         this._InitName();
     }
-
-    //#region Get Property
+    //#region Get Value Property
     get AbsPath() {
         let Nodes = [];
         let FindNode = this;
@@ -58,6 +91,9 @@ class PvNode {
         let Exp = new RegExp(/^pv-/);
         return this.Attrs.filter(Item => !Exp.test(Item.name));
     }
+    //#endregion
+
+    //#region Path Property
     get NamePaths() {
         if (this.Name == null) {
             debugger;
@@ -75,22 +111,9 @@ class PvNode {
             return null;
         return this.SlotName.split('.');
     }
-
-    get Pvs() {
-        return this.NextTree('pv-name');
-    }
-    get Outs() {
-        return this.NextTree('pv-name').filter(Item => Item.IsPvOut);
-    }
-    get Ins() {
-        return this.NextTree('pv-in');
-    }
-    get Slots() {
-        return this.NextTree('pv-slot');
-    }
     //#endregion
 
-    //#region Get Boolean Property
+    //#region Has Property
     get HasSlots() {
         return this.Slots.length > 0;
     }
@@ -124,6 +147,12 @@ class PvNode {
     get HasAttrsNotPv() {
         return this.AttrsNotPv.length > 0;
     }
+    get HasLayout() {
+        return this.IsMatch('pv-layout');
+    }
+    //#endregion
+
+    //#region Is Property
     get IsTemplate() {
         return this.Element.tagName == 'TEMPLATE';
     }
@@ -143,7 +172,7 @@ class PvNode {
 
     //#region Init Method
     _InitName() {
-        if (this.Element == null || this.PvType == null)
+        if (this.Element == null)
             return;
 
         this.Name = this.GetAttr('pv-name');
@@ -164,7 +193,11 @@ class PvNode {
             if (this.Name == null || this.Name == '')
                 this.Name = this.SlotName;
         }
-        this.SetAttr('_NodeId', this.Id);
+
+        if (this.HasLayout)
+            this.Layout = this.GetAttr('pv-layout');
+
+        this.SetAttr('_nodeid', this.Id);
     }
     //#endregion
 
@@ -236,21 +269,12 @@ class PvNode {
         }
         return this;
     }
-
     SetAttr(Name, Value) {
         this.Element.setAttribute(Name, Value);
         return this;
     }
     GetAttr(Name) {
         return this.Element.getAttribute(Name);
-    }
-    //#endregion
-
-    //#region Private Process
-    _GenerateId() {
-        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
     }
     //#endregion
 
@@ -280,18 +304,11 @@ class PvNode {
     //#region Log
     //#endregion
 }
-//#endregion
-
-/**
- *  PvRender.js v1.1.5
- *  From Rugal Tu
- * */
-class PvRender {
+class PvRender extends PvBase {
     constructor() {
-        this.Nodes = [];
+        super();
         this._Init();
     }
-
     //#region Get Property
     get NodeList() {
         let Result = [];
@@ -301,18 +318,6 @@ class PvRender {
                 return true;
             });
         return Result;
-    }
-    get Pvs() {
-        return this.NextTree('pv-name');
-    }
-    get Outs() {
-        return this.NextTree('pv-name').filter(Item => Item.IsPvOut);
-    }
-    get Ins() {
-        return this.NextTree('pv-in');
-    }
-    get Slots() {
-        return this.NextTree('pv-slot');
     }
     //#endregion
 
@@ -388,36 +393,38 @@ class PvRender {
 
     //#region Set Tree
     _SetTree() {
-        let PvTypes = ['pv-slot', 'pv-in'];
-        for (let Item of this.NextTree(...PvTypes)) {
-            this._RCS_SetTree(Item, PvTypes);
+        let QueryTypes = ['pv-slot', 'pv-in', 'pv-layout'];
+        for (let Item of this.NextTree(...QueryTypes)) {
+            this._RCS_SetTree(Item, QueryTypes);
         }
     }
-    _RCS_SetTree(TargetNode, PvTypes) {
-
+    _RCS_SetTree(TargetNode, QueryTypes) {
+        let InputType = ['pv-slot', 'pv-in'];
         let FindNode = this._FindNode(TargetNode);
         if (FindNode == null)
             return;
 
-        if (TargetNode.Nodes.length > 0) {
-            let ContentNodes = TargetNode.Nodes
-                .filter(Item => !Item.IsMatch(...PvTypes));
+        if (TargetNode.Id != FindNode.Id) {
+            if (TargetNode.Nodes.length > 0) {
+                let ContentNodes = TargetNode.Nodes
+                    .filter(Item => !Item.IsMatch(...InputType));
 
-            if (ContentNodes.length > 0)
-                FindNode.SetContentNode(...ContentNodes);
-            else {
-                for (let Item of TargetNode.NextTree(...PvTypes))
-                    this._RCS_SetTree(Item, PvTypes);
+                if (ContentNodes.length > 0)
+                    FindNode.SetContentNode(...ContentNodes);
+                else {
+                    for (let Item of TargetNode.NextTree(...QueryTypes))
+                        this._RCS_SetTree(Item, QueryTypes);
+                }
             }
+            else if (TargetNode.Content && TargetNode.Content != '')
+                FindNode.SetContent(TargetNode);
         }
-        else if (TargetNode.Content && TargetNode.Content != '')
-            FindNode.SetContent(TargetNode);
 
         this._SetNodeAttr(FindNode, TargetNode);
         this._RCS_BuildChildren(FindNode);
 
-        for (let Item of FindNode.NextTree(...PvTypes))
-            this._RCS_SetTree(Item, PvTypes);
+        for (let Item of FindNode.NextTree(...QueryTypes))
+            this._RCS_SetTree(Item, QueryTypes);
     }
     _FindNode(TargetNode) {
         let TargetPathNodes = [];
@@ -457,10 +464,21 @@ class PvRender {
     _SetNodeAttr(TargetNode, SourceNode) {
         if (TargetNode == null)
             return;
-        for (let Item of SourceNode.Attrs) {
-            let AttrName = Item.name;
-            let AttrValue = Item.value;
-            if (AttrName.includes('pv-'))
+
+        let Attrs = SourceNode.Attrs.map(Item => {
+            return {
+                Name: Item.name,
+                Value: Item.value,
+            }
+        });
+
+        if (SourceNode.HasLayout)
+            this._SetNodeLayout(TargetNode, SourceNode);
+
+        for (let Item of Attrs) {
+            let AttrName = Item.Name;
+            let AttrValue = Item.Value;
+            if (AttrName.includes('pv-') || AttrName[0] == '_')
                 continue;
 
             if (AttrName.includes('.')) {
@@ -473,6 +491,39 @@ class PvRender {
             }
             TargetNode.SetAttr(AttrName, AttrValue);
         }
+    }
+    _SetNodeLayout(TargetNode, SourceNode) {
+        let FullLayout = SourceNode.Layout;
+        if (FullLayout == null)
+            return;
+
+        let Layouts = FullLayout.split(' ');
+        for (let Layout of Layouts) {
+            let LayoutNode = this._FindLayoutNode(SourceNode, Layout);
+            if (LayoutNode == null)
+                continue;
+
+            this._SetNodeAttr(TargetNode, LayoutNode);
+        }
+    }
+    _FindLayoutNode(TargetNode, LayoutName) {
+        if (TargetNode == null)
+            return null;
+
+        if (TargetNode.Name == LayoutName)
+            return TargetNode;
+
+        let TryGetNode = TargetNode.Pvs
+            .find(Item => Item.Name == LayoutName);
+
+        if (TryGetNode)
+            return TryGetNode;
+
+        let UpperNode = TargetNode.Parent;
+        if (UpperNode == null && TargetNode instanceof PvNode == true)
+            UpperNode = this;
+
+        return this._FindLayoutNode(UpperNode, LayoutName);
     }
     _TransAttrValue(TargetValue, Action, AttrName, AttrValue) {
         let SplitReg = null;
@@ -521,6 +572,7 @@ class PvRender {
         }
         return TargetValues;
     }
+
     //#endregion
 
     //#region Tree Viewer
