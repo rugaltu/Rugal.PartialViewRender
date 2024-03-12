@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.1.8
+ *  PvRender.js v1.2.0
  *  From Rugal Tu
  * */
 class PvBase {
