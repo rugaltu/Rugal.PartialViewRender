@@ -3,21 +3,30 @@
 }
 
 <section>
-    <template pv-name="Layout1"
-              class="row justify-content-center"></template>
+    
+    <template pv-name="L-Test" class="bg-success"></template>
 
-    <template pv-name="Layout2"
-              pv-layout="Layout1"
-              class.add="bg-success"></template>
+    <div pv-name="Div1" pv-layout="L-Test">
+        <div pv-name="Div2">
+            <div pv-name="Div3" pv-out>
 
-    <template pv-name="Layout3"
-              class.add="border border-5"></template>
+            </div>
+        </div>
 
-    <div pv-name="Test" pv-layout="Layout1">
-        123
+        <template pv-name="Content" pv-in="Div3">
+            <div pv-name="Content2">
+                123
+            </div>
+        </template>
     </div>
 
-    <template pv-slot="Test"
-              pv-layout="Layout3"></template>
+    <template pv-slot="Div1.Content">
+        <template pv-slot="Content2">
+            AAA
+        </template>
+    </template>
+
+    
+
 
 </section>
