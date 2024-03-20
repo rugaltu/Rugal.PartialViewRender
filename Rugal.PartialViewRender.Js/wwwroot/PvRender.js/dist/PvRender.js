@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.2.2
+ *  PvRender.js v1.2.3
  *  From Rugal Tu
  * */
 class PvBase {
@@ -187,6 +187,9 @@ class PvNode extends PvBase {
     get IsPvSlot() {
         return this.IsMatch('pv-slot');
     }
+    get IsPvAppend() {
+        return this.IsMatch('pv-append');
+    }
     //#endregion
 
     //#region Init Method
@@ -284,19 +287,32 @@ class PvNode extends PvBase {
         if (SourceNodes.length == 0)
             return false;
 
-        let OrgInner = this.Element.innerHTML;
         this.Element.innerHTML = null;
+        return this.AppendContent(...SourceNodes);
+    }
+    AppendContent(...SourceNodes) {
+        if (SourceNodes.length == 0)
+            return false;
+
+        let OrgInner = this.Element.innerHTML;
         for (let Item of SourceNodes)
             this.Element.innerHTML += Item.Content;
 
         return OrgInner != this.Content;
     }
+
     SetContentNode(...SourceNodes) {
         if (SourceNodes.length == 0)
             return false;
 
-        let OrgInner = this.Element.innerHTML;
         this.Element.innerHTML = null;
+        return this.AppendContentNode(...SourceNodes);
+    }
+    AppendContentNode(...SourceNodes) {
+        if (SourceNodes.length == 0)
+            return false;
+
+        let OrgInner = this.Element.innerHTML;
         for (let Item of SourceNodes) {
             if (!this.IsTemplate) {
                 //let CloneElement = Item.Element;
@@ -308,6 +324,7 @@ class PvNode extends PvBase {
         }
         return OrgInner != this.Content;
     }
+
     SetAttr(Name, Value) {
         this.Element.setAttribute(Name, Value);
         return this;
@@ -514,10 +531,14 @@ class PvRender extends PvBase {
             let ContentNodes = SourceNode.Nodes
                 .filter(Item => !Item.IsMatch(...InputType));
 
-            IsInnerChange = TargetNode.SetContentNode(...ContentNodes);
+            IsInnerChange = SourceNode.IsPvAppend ?
+                TargetNode.AppendContentNode(...ContentNodes) :
+                TargetNode.SetContentNode(...ContentNodes);
         }
         else if (SourceNode.Content && SourceNode.Content != '') {
-            IsInnerChange = TargetNode.SetContent(SourceNode);
+            IsInnerChange = SourceNode.IsPvAppend ?
+                TargetNode.AppendContent(SourceNode) :
+                TargetNode.SetContent(SourceNode);
         }
 
         return IsInnerChange;
@@ -577,10 +598,13 @@ class PvRender extends PvBase {
         if (SourceNode.HasLayout)
             this._SetNodeLayout(TargetNode, SourceNode);
 
+        const SkipAttrs = [
+            'pv-name', 'pv-slot', 'pv-in', 'pv-out',
+        ];
         for (let Item of Attrs) {
             let AttrName = Item.Name;
             let AttrValue = Item.Value;
-            if (AttrName.includes('pv-') || AttrName[0] == '_')
+            if (SkipAttrs.includes(AttrName) || AttrName[0] == '_')
                 continue;
 
             if (AttrName.includes('.')) {
