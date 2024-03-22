@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.2.3
+ *  PvRender.js v1.2.4
  *  From Rugal Tu
  * */
 class PvBase {
@@ -599,12 +599,15 @@ class PvRender extends PvBase {
             this._SetNodeLayout(TargetNode, SourceNode);
 
         const SkipAttrs = [
-            'pv-name', 'pv-slot', 'pv-in', 'pv-out',
+            'pv-name', 'pv-slot', 'pv-in', 'pv-out'
         ];
+
+        const SkipRegex = new RegExp(/^v-slot\b/);
+
         for (let Item of Attrs) {
             let AttrName = Item.Name;
             let AttrValue = Item.Value;
-            if (SkipAttrs.includes(AttrName) || AttrName[0] == '_')
+            if (SkipAttrs.includes(AttrName) || AttrName[0] == '_' || SkipRegex.test(AttrName))
                 continue;
 
             if (AttrName.includes('.')) {
@@ -615,6 +618,7 @@ class PvRender extends PvBase {
                 let TargetAttrValue = TargetNode.GetAttr(AttrName);
                 AttrValue = this._TransAttrValue(TargetAttrValue, Action, AttrName, AttrValue);
             }
+
             TargetNode.SetAttr(AttrName, AttrValue);
         }
     }
