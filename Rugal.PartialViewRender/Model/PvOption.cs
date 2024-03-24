@@ -4,5 +4,6 @@
     {
         public string PvName { get; set; }
         public object Data { get; set; }
+        public TableColumnModel ToTableColumn() => new(this);
     }
 }
