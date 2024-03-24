@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.2.4
+ *  PvRender.js v1.2.6
  *  From Rugal Tu
  * */
 class PvBase {
@@ -491,11 +491,13 @@ class PvRender extends PvBase {
     }
     _RCS_SetTree(SourceNode, QueryTypes, IsCanNotify = true) {
 
+        SourceNode.IsNotifyChange = false;
+
         let TargetNode = this._FindNode(SourceNode);
         if (TargetNode == null)
             return;
 
-        this._SetNodeAttr(TargetNode, SourceNode);
+        let IsAttrSet = this._SetNodeAttr(TargetNode, SourceNode);
         let IsNodeSet = false;
         if (SourceNode.Id != TargetNode.Id) {
             IsNodeSet = this._SetNodeContent(TargetNode, SourceNode);
@@ -503,11 +505,10 @@ class PvRender extends PvBase {
                 this._RCS_BuildChildren(TargetNode);
         }
 
-        SourceNode.IsNotifyChange = false;
         for (let Item of SourceNode.Nodes)
             this._RCS_SetTree(Item, QueryTypes, IsCanNotify)
 
-        if (!IsNodeSet)
+        if (!IsNodeSet && !IsAttrSet)
             return;
 
         if (TargetNode.IsPvSlot || TargetNode.IsPvIn) {
@@ -586,7 +587,7 @@ class PvRender extends PvBase {
     }
     _SetNodeAttr(TargetNode, SourceNode) {
         if (TargetNode == null)
-            return;
+            return false;
 
         let Attrs = SourceNode.Attrs.map(Item => {
             return {
@@ -604,6 +605,7 @@ class PvRender extends PvBase {
 
         const SkipRegex = new RegExp(/^v-slot\b/);
 
+        let IsSet = false;
         for (let Item of Attrs) {
             let AttrName = Item.Name;
             let AttrValue = Item.Value;
@@ -620,7 +622,9 @@ class PvRender extends PvBase {
             }
 
             TargetNode.SetAttr(AttrName, AttrValue);
+            IsSet = true;
         }
+        return IsSet;
     }
     _SetNodeLayout(TargetNode, SourceNode) {
         let FullLayout = SourceNode.Layout;

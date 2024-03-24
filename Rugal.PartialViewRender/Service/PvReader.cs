@@ -68,22 +68,25 @@ namespace Rugal.PartialViewRender.Service
         where TView : Enum
     {
         public string ViewPath { get; private set; }
-        public PvRender(string _ViewPath,  IServiceProvider _ServiceProvider) : base(_ServiceProvider)
+        public PvRender(string _ViewPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
         {
             ViewPath = _ViewPath.TrimEnd('/', '\\');
         }
         public Task<IHtmlContent> FromAsync(TView ViewName, string PvName = null)
+        { 
+            return BaseFromAsync(ViewName, PvName, out _);
+        }
+        public Task<IHtmlContent> FromAsync(TView ViewName, string PvName, out PvOption Option)
         {
-            PvName ??= ViewName.ToString();
-            var Option = NewOption(Item =>
-            {
-                Item.PvName = PvName;
-            });
-            return RenderAsync(ViewName.ToString(), ViewPath, Option);
+            return BaseFromAsync(ViewName, PvName, out Option);
         }
         public IHtmlContent From(TView ViewName, string PvName = null)
         {
             return FromAsync(ViewName, PvName).Result;
+        }
+        public IHtmlContent From(TView ViewName, string PvName, out PvOption Option)
+        {
+            return FromAsync(ViewName, PvName, out Option).Result;
         }
         private static PvOption NewOption(Action<PvOption> OptionFunc = null)
         {
@@ -92,6 +95,16 @@ namespace Rugal.PartialViewRender.Service
                 OptionFunc(Result);
 
             return Result;
+        }
+        private Task<IHtmlContent> BaseFromAsync(TView ViewName, string PvName, out PvOption Option)
+        {
+            PvName ??= ViewName.ToString();
+            Option = NewOption(Item =>
+            {
+                Item.PvName = PvName;
+            });
+
+            return RenderAsync(ViewName.ToString(), ViewPath, Option);
         }
     }
 }
