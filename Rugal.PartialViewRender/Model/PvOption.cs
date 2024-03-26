@@ -8,8 +8,17 @@
         public TableColumnModel WithTableColumn()
         {
             TableColumn = new TableColumnModel(this);
-            PvName = TableColumn.PvName;
             return TableColumn;
+        }
+        public string Map(params string[] Paths)
+        {
+            var ClearPaths = Paths
+                .Select(Item => Item.TrimStart('.').TrimEnd('.'))
+                .ToList();
+
+            ClearPaths.Insert(0, PvName);
+            var Result = string.Join('.', ClearPaths);
+            return Result;
         }
     }
 }

@@ -5,7 +5,6 @@ namespace Rugal.PartialViewRender.Model
     public class TableColumnModel
     {
         public PvOption Option { get; init; }
-        public string PvName => $"TableColumn-{Option.PvName}";
         public string VSlotKey => $"TableColumns.{Option.PvName}".ToLower();
         public HtmlString VSlot => GetVSlot();
         public List<string> VSlotParma { get; init; }
