@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.2.6
+ *  PvRender.js v1.4.0
  *  From Rugal Tu
  * */
 class PvBase {
@@ -97,6 +97,9 @@ class PvNode extends PvBase {
         return this.Element.outerHTML;
     }
     get Children() {
+        if (this.Element == null)
+            return [];
+
         let Children;
         if (this.IsTemplate)
             Children = this.Element.content.children;
@@ -105,6 +108,8 @@ class PvNode extends PvBase {
         return Children;
     }
     get Attrs() {
+        if (this.Element == null)
+            return [];
         return [...this.Element.attributes];
     }
     get AttrsNotPv() {
@@ -173,6 +178,8 @@ class PvNode extends PvBase {
 
     //#region Is Property
     get IsTemplate() {
+        if (this.Element == null)
+            return false;
         return this.Element.tagName == 'TEMPLATE';
     }
     get IsPvName() {
@@ -189,6 +196,9 @@ class PvNode extends PvBase {
     }
     get IsPvAppend() {
         return this.IsMatch('pv-append');
+    }
+    get IsPvInsert() {
+        return this.IsMatch('pv-insert');
     }
     //#endregion
 
@@ -259,7 +269,8 @@ class PvNode extends PvBase {
         return Result;
     }
     Remove() {
-        this.Element.remove();
+        if (this.Element != null)
+            this.Element.remove();
         let Parent = this.Parent;
         if (Parent == null)
             return;
@@ -295,8 +306,11 @@ class PvNode extends PvBase {
             return false;
 
         let OrgInner = this.Element.innerHTML;
-        for (let Item of SourceNodes)
+        for (let Item of SourceNodes) {
+            if (Item.Element == null)
+                continue;
             this.Element.innerHTML += Item.Content;
+        }
 
         return OrgInner != this.Content;
     }
@@ -314,13 +328,16 @@ class PvNode extends PvBase {
 
         let OrgInner = this.Element.innerHTML;
         for (let Item of SourceNodes) {
+            if (Item.Element == null)
+                continue;
+
             if (!this.IsTemplate) {
-                //let CloneElement = Item.Element;
-                let CloneElement = Item.Element.cloneNode(true);
-                this.Element.append(CloneElement);
+                let AppendElement = Item.Element;
+                this.Element.append(AppendElement);
             }
-            else
+            else {
                 this.Element.innerHTML += Item.FullContent;
+            }
         }
         return OrgInner != this.Content;
     }
@@ -480,12 +497,13 @@ class PvRender extends PvBase {
             this._RCS_SetTree(SetNode, InputTypes);
 
         while (true) {
-            let NotifyNode = this.NodeList
-                .find(Item => Item.IsNotifyChange)
+            let AllNotifyNode = this.NodeList
+                .filter(Item => Item.IsNotifyChange);
 
-            if (NotifyNode == null)
+            if (AllNotifyNode.length == 0)
                 break;
 
+            let NotifyNode = AllNotifyNode[0];
             this._RCS_SetTree(NotifyNode, InputTypes, false);
         }
     }
@@ -501,12 +519,18 @@ class PvRender extends PvBase {
         let IsNodeSet = false;
         if (SourceNode.Id != TargetNode.Id) {
             IsNodeSet = this._SetNodeContent(TargetNode, SourceNode);
-            if (IsNodeSet)
+            if (IsNodeSet) {
                 this._RCS_BuildChildren(TargetNode);
+            }
         }
 
-        for (let Item of SourceNode.Nodes)
+        for (let Item of SourceNode.Nodes) {
+            if (Item.IsPvInsert) {
+                IsNodeSet = TargetNode.AppendContentNode(Item);
+                this._RCS_BuildChildren(TargetNode);
+            }
             this._RCS_SetTree(Item, QueryTypes, IsCanNotify)
+        }
 
         if (!IsNodeSet && !IsAttrSet)
             return;
@@ -516,8 +540,11 @@ class PvRender extends PvBase {
             return;
         }
 
+        if (SourceNode.Id == TargetNode.Id)
+            return;
+
         let ParentInput = SourceNode;
-        while (ParentInput.Parent) {
+        while (ParentInput) {
             if (IsCanNotify && (ParentInput.IsPvSlot || ParentInput.IsPvIn)) {
                 ParentInput.IsNotifyChange = true;
                 break;
@@ -529,6 +556,10 @@ class PvRender extends PvBase {
         let InputType = ['pv-slot', 'pv-in'];
         let IsInnerChange = false;
         if (SourceNode.Nodes.length > 0) {
+
+            if (SourceNode.Nodes.filter(Item => Item.Element != null).length == 0)
+                return false;
+
             let ContentNodes = SourceNode.Nodes
                 .filter(Item => !Item.IsMatch(...InputType));
 
@@ -600,7 +631,7 @@ class PvRender extends PvBase {
             this._SetNodeLayout(TargetNode, SourceNode);
 
         const SkipAttrs = [
-            'pv-name', 'pv-slot', 'pv-in', 'pv-out'
+            'pv-name', 'pv-slot', 'pv-in', 'pv-out', 'pv-insert'
         ];
 
         const SkipRegex = new RegExp(/^v-slot\b/);
@@ -717,16 +748,14 @@ class PvRender extends PvBase {
             this.Nodes.splice(DeleteIndex, 1);
         }
 
-        let AllTemplate = this.NodeList.filter(Item => Item.IsTemplate);
-        for (let Item of AllTemplate) {
-            let IsCanRemove = this._CheckRemove(Item);
-            if (!IsCanRemove)
-                continue;
-
-            Item.Remove();
-        }
+        for (let Item of this.Nodes)
+            this._RCS_ClearPv(Item);
     }
     _CheckRemove(TargetNode) {
+
+        if (!TargetNode.IsTemplate)
+            return false;
+
         let VSlotExp = new RegExp(/^v-slot\b/);
         let IsVSlot = TargetNode.Attrs.filter(Item => VSlotExp.test(Item.name)).length > 0;
         if (!IsVSlot)
@@ -740,6 +769,16 @@ class PvRender extends PvBase {
         }
 
         return true;
+    }
+    _RCS_ClearPv(TargetNode) {
+        let IsCanRemove = this._CheckRemove(TargetNode);
+        if (IsCanRemove) {
+            TargetNode.Remove();
+            return;
+        }
+
+        for (let Item of TargetNode.Nodes)
+            this._RCS_ClearPv(Item);
     }
     //#endregion
 
