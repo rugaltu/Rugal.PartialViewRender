@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.4.1
+ *  PvRender.js v1.4.2
  *  From Rugal Tu
  * */
 class PvBase {
@@ -748,8 +748,7 @@ class PvRender extends PvBase {
             this.Nodes.splice(DeleteIndex, 1);
         }
 
-        let Nodes = [...TargetNode.Nodes];
-        for (let Item of Nodes)
+        for (let Item of this.Nodes)
             this._RCS_ClearPv(Item);
     }
     _CheckRemove(TargetNode) {
