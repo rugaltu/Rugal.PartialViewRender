@@ -416,7 +416,7 @@ class PvRender extends PvBase {
         document.addEventListener('DOMContentLoaded', () => {
             this._InitTree();
             this._SetTree();
-            this._ClearPv();
+            //this._ClearPv();
         });
     }
     //#endregion
@@ -777,7 +777,8 @@ class PvRender extends PvBase {
             return;
         }
 
-        for (let Item of TargetNode.Nodes)
+        let Nodes = [...TargetNode.Nodes];
+        for (let Item of Nodes)
             this._RCS_ClearPv(Item);
     }
     //#endregion
