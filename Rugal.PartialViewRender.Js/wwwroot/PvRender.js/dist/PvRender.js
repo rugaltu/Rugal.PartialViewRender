@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.4.0
+ *  PvRender.js v1.4.1
  *  From Rugal Tu
  * */
 class PvBase {
@@ -416,7 +416,7 @@ class PvRender extends PvBase {
         document.addEventListener('DOMContentLoaded', () => {
             this._InitTree();
             this._SetTree();
-            //this._ClearPv();
+            this._ClearPv();
         });
     }
     //#endregion
@@ -748,7 +748,8 @@ class PvRender extends PvBase {
             this.Nodes.splice(DeleteIndex, 1);
         }
 
-        for (let Item of this.Nodes)
+        let Nodes = [...TargetNode.Nodes];
+        for (let Item of Nodes)
             this._RCS_ClearPv(Item);
     }
     _CheckRemove(TargetNode) {
@@ -771,6 +772,7 @@ class PvRender extends PvBase {
         return true;
     }
     _RCS_ClearPv(TargetNode) {
+
         let IsCanRemove = this._CheckRemove(TargetNode);
         if (IsCanRemove) {
             TargetNode.Remove();
