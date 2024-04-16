@@ -20,5 +20,14 @@
             var Result = string.Join('.', ClearPaths);
             return Result;
         }
+
+        public string With(params string[] Paths)
+        {
+            var PathList = Paths.ToList();
+            PathList.Insert(0, PvName);
+
+            var Result = string.Join("", PathList);
+            return Result;
+        }
     }
 }
