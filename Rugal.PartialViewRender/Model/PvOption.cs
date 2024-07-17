@@ -1,14 +1,15 @@
 ﻿namespace Rugal.PartialViewRender.Model
 {
-    public class PvOption
+    public class PvOption<TPvType>
+        where TPvType : Enum
     {
-        public string PvName { get; set; }
+        public TPvType PvType { get; private set; }
+        public string PvName { get; private set; }
         public object Data { get; set; }
-        public TableColumnModel TableColumn { get; private set; }
-        public TableColumnModel WithTableColumn()
+        public PvOption(string _PvName, TPvType _PvType)
         {
-            TableColumn = new TableColumnModel(this);
-            return TableColumn;
+            PvName = _PvName;
+            PvType = _PvType;
         }
         public string Map(params string[] Paths)
         {
@@ -20,7 +21,6 @@
             var Result = string.Join('.', ClearPaths);
             return Result;
         }
-
         public string With(params string[] Paths)
         {
             var PathList = Paths.ToList();

@@ -19,7 +19,8 @@ namespace Rugal.PartialViewRender.Service
         {
             ServiceProvider = _ServiceProvider;
         }
-        protected async Task<IHtmlContent> RenderAsync(string ViewName, string ViewPath, PvOption Option)
+        protected async Task<IHtmlContent> RenderAsync<TPvType>(string ViewName, string ViewPath, PvOption<TPvType> Option)
+            where TPvType : Enum
         {
             var Http = ServiceProvider.GetRequiredService<IHttpContextAccessor>();
             var HttpContext = Http.HttpContext;
@@ -64,47 +65,35 @@ namespace Rugal.PartialViewRender.Service
             return Result;
         }
     }
-    public class PvRender<TView> : PvRender
-        where TView : Enum
+    public class PvRender<TPvType> : PvRender
+        where TPvType : Enum
     {
         public string ViewPath { get; private set; }
         public PvRender(string _ViewPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
         {
             ViewPath = _ViewPath.TrimEnd('/', '\\');
         }
-        public Task<IHtmlContent> FromAsync(TView ViewName, string PvName = null)
-        { 
+        public Task<IHtmlContent> FromAsync(TPvType ViewName, string PvName = null)
+        {
             return BaseFromAsync(ViewName, PvName, out _);
         }
-        public Task<IHtmlContent> FromAsync(TView ViewName, string PvName, out PvOption Option)
+        public Task<IHtmlContent> FromAsync(TPvType ViewName, string PvName, out PvOption<TPvType> Option)
         {
             return BaseFromAsync(ViewName, PvName, out Option);
         }
-        public IHtmlContent From(TView ViewName, string PvName = null)
+        public IHtmlContent From(TPvType ViewName, string PvName = null)
         {
             return FromAsync(ViewName, PvName).Result;
         }
-        public IHtmlContent From(TView ViewName, string PvName, out PvOption Option)
+        public IHtmlContent From(TPvType ViewName, string PvName, out PvOption<TPvType> Option)
         {
             return FromAsync(ViewName, PvName, out Option).Result;
         }
-        private static PvOption NewOption(Action<PvOption> OptionFunc = null)
+        private Task<IHtmlContent> BaseFromAsync(TPvType PvType, string PvName, out PvOption<TPvType> Option)
         {
-            var Result = new PvOption();
-            if (OptionFunc is not null)
-                OptionFunc(Result);
-
-            return Result;
-        }
-        private Task<IHtmlContent> BaseFromAsync(TView ViewName, string PvName, out PvOption Option)
-        {
-            PvName ??= ViewName.ToString();
-            Option = NewOption(Item =>
-            {
-                Item.PvName = PvName;
-            });
-
-            return RenderAsync(ViewName.ToString(), ViewPath, Option);
+            PvName ??= PvType.ToString();
+            Option = new PvOption<TPvType>(PvName, PvType);
+            return RenderAsync(PvType.ToString(), ViewPath, Option);
         }
     }
 }

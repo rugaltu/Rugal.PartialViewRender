@@ -1,5 +1,5 @@
 /**
- *  PvRender.js v1.4.2
+ *  PvRender.js v1.4.3
  *  From Rugal Tu
  * */
 class PvBase {
@@ -643,7 +643,7 @@ class PvRender extends PvBase {
             if (SkipAttrs.includes(AttrName) || AttrName[0] == '_' || SkipRegex.test(AttrName))
                 continue;
 
-            if (AttrName.includes('.')) {
+            if (AttrName.includes('.') && !AttrName.startsWith('v-')) {
                 let Names = AttrName.split('.');
                 let Action = Names.pop();
                 AttrName = Names.join('.');
