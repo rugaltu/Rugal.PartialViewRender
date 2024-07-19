@@ -13,20 +13,30 @@
         }
         public string Map(params string[] Paths)
         {
-            var ClearPaths = Paths
-                .Select(Item => Item.TrimStart('.').TrimEnd('.'))
-                .ToList();
-
-            ClearPaths.Insert(0, PvName);
-            var Result = string.Join('.', ClearPaths);
+            var Result = ToFullPaths(".", [PvName, .. Paths]);
             return Result;
         }
         public string With(params string[] Paths)
         {
-            var PathList = Paths.ToList();
-            PathList.Insert(0, PvName);
-
-            var Result = string.Join("", PathList);
+            var Result = ToFullPaths("", [PvName, .. Paths]);
+            return Result;
+        }
+        public string Main(params string[] Paths)
+        {
+            var PvTypeName = typeof(TPvType).Name;
+            var Result = ToFullPaths(".", [PvTypeName, PvType.ToString(), .. Paths]);
+            return Result;
+        }
+        private static List<string> ToClearPaths(IEnumerable<string> Paths)
+        {
+            return Paths
+                .Select(Item => Item.TrimStart('.').TrimEnd('.'))
+                .ToList();
+        }
+        private static string ToFullPaths(string Separator, IEnumerable<string> Paths)
+        {
+            var AllPaths = ToClearPaths(Paths);
+            var Result = string.Join(Separator, AllPaths);
             return Result;
         }
     }
