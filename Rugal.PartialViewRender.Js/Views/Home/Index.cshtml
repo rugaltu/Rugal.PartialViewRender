@@ -3,30 +3,33 @@
 }
 
 <section>
-    
-    <template pv-name="L-Test" class="bg-success"></template>
 
-    <div pv-name="Div1" pv-layout="L-Test">
-        <div pv-name="Div2">
-            <div pv-name="Div3" pv-out>
+    <!-- 使用套件的人 -->
+    <pv-tag tag="div" layout="DtvlLayout.Row">
+        <dtvl-pv pv-type="AppleButton" layout="DtvlLayout.Col6" pv-name="AppBtn">
+            <pv-slot slot="AppleButtonSlot.Text">333</pv-slot>
+        </dtvl-pv>
+        <dtvl-pv pv-type="AppleButton" class="col-6 p-0 m-0">
+            <pv-slot slot="AppleButtonSlot.Text">333</pv-slot>
+        </dtvl-pv>
+    </pv-tag>
 
-            </div>
-        </div>
+    @*   <dtvl-pv pv-type="Test2">
+    <pv-slot slot="TestSlot.A">
+    321
+    </pv-slot>
 
-        <template pv-name="Content" pv-in="Div3">
-            <div pv-name="Content2">
-                123
-            </div>
-        </template>
+    <pv-slot slot="TestSlot.B" pass-type="Append">
+
+    <pv-attr layout="TestLayout.LayoutA"
+    pass-type="Append"
+    class="fw-bolder" />
+
+    <pv-attr pass-type="Append"
+    style="color:yellow;" />
+    <div>
+    Append-B
     </div>
-
-    <template pv-slot="Div1.Content">
-        <template pv-slot="Content2">
-            AAA
-        </template>
-    </template>
-
-    
-
-
+    </pv-slot>
+    </dtvl-pv> *@
 </section>

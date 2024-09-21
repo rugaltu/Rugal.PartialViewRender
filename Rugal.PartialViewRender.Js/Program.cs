@@ -1,5 +1,5 @@
-using Rugal.PartialViewRender.Js.ViewComponent.Common;
 using Rugal.PartialViewRender.Extention;
+using Rugal.PartialViewRender.Js.PartialView.Dtvl;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +8,7 @@ builder.Services
     .AddRazorRuntimeCompilation();
 
 builder.Services
-    .AddPvRender<Common>(builder.Configuration);
+    .AddPvRender<DtvlPv>(builder.Configuration);
 
 var app = builder.Build();
 app.UseExceptionHandler("/Home/Error");

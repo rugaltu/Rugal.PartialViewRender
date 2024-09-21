@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rugal.PartialViewRender.Model;
 using Rugal.PartialViewRender.Service;
 
 namespace Rugal.PartialViewRender.Extention
@@ -11,13 +12,14 @@ namespace Rugal.PartialViewRender.Extention
         {
             var ViewName = typeof(TViewEnum).Name;
             var ViewPath = Configuration[$"PvRender:{ViewName}"];
-            
+
             Services.AddHttpContextAccessor();
             Services.AddSingleton(Provider =>
             {
-                var Reader = new PvRender<TViewEnum>(ViewPath,Provider);
+                var Reader = new PvRender<TViewEnum>(ViewPath, Provider);
                 return Reader;
             });
+            Services.AddScoped<PvLayoutStore>();
             return Services;
         }
     }
