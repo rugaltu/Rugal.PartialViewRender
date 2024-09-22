@@ -40,12 +40,13 @@ namespace Rugal.PartialViewRender.Model
         public PvSlotsStore QuerySlot(params Enum[] SlotNames) => Slots.Query(SlotNames);
         public PvSlotsStore QuerySlot<TSlotName>(params TSlotName[] SlotNames) where TSlotName : Enum
             => Slots.Query(SlotNames);
+        public bool HasSlot(string SlotName) => Slots.ContainsKey(SlotName);
+        public bool HasSlot(Enum SlotName) => HasSlot(SlotName.ToString());
         public PvAttrsSet GetAttr(string AttrName) => Attrs.Get(AttrName);
         public PvAttrsSet GetAttr(Enum AttrName) => Attrs.Get(AttrName);
         public PvAttrsStore QueryAttr(params Enum[] SlotNames) => Attrs.Query(SlotNames);
         public PvAttrsStore QueryAttr<TSlotName>(params TSlotName[] SlotNames) where TSlotName : Enum
             => Attrs.Query(SlotNames);
-
         public string Map(params string[] Paths)
         {
             var Result = ToFullPaths(".", [PvName, .. Paths]);
