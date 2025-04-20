@@ -8,9 +8,9 @@
 		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
 		<RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 
-		<AssemblyVersion>2.0.1</AssemblyVersion>
-		<FileVersion>$(AssemblyVersion)-beta</FileVersion>
-		<Version>$(AssemblyVersion)-beta</Version>
+		<AssemblyVersion>1.0.1</AssemblyVersion>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
 		<Authors>Rugal</Authors>
 		<PackageProjectUrl>https://github.com/john2653589/Rugal.PartialViewRender</PackageProjectUrl>
 

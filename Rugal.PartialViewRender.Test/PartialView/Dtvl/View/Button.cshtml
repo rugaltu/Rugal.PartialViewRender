@@ -1,0 +1,16 @@
+﻿@model PvOption<DtvlPv>
+
+<section>
+    <pv-tag tag="div"
+            class="text-white"
+            pass-attr="Model.GetAttr(ButtonSlot.Title)"
+            pass-slot="Model.GetSlot(ButtonSlot.Title)">
+        標題:
+    </pv-tag>
+    <pv-tag tag="button"
+            pass-attr="Model.GetAttr(ButtonSlot.Button)"
+            class="fw-bolder btn">
+        @Model.RenderSlot(ButtonSlot.Icon)
+        @Model.RenderSlot(ButtonSlot.Text)
+    </pv-tag>
+</section>
