@@ -15,9 +15,9 @@ namespace Rugal.PartialViewRender.Services;
 public abstract class PvRender
 {
     private readonly IServiceProvider ServiceProvider;
-    public PvRender(IServiceProvider ServiceProvider)
+    public PvRender(IServiceProvider _ServiceProvider)
     {
-        this.ServiceProvider = ServiceProvider;
+        ServiceProvider = _ServiceProvider;
     }
     protected async Task<IHtmlContent> RenderAsync<TPvType>(string ViewName, string ViewPath, PvOption<TPvType> Option) where TPvType : Enum
     {
@@ -28,7 +28,6 @@ public abstract class PvRender
         var NewActionContext = new ActionContext(HttpContext, RouteData, new ActionDescriptor());
 
         var ViewEngine = ServiceProvider.GetRequiredService<IRazorViewEngine>();
-
         ViewName = ConvertViewName(ViewPath, ViewName);
         var GetView = ViewEngine
             .GetView(ViewName, ViewName, false) ?? throw new Exception($"{ViewName} is not found");
@@ -66,9 +65,9 @@ public abstract class PvRender
 public class PvRender<TPvType> : PvRender where TPvType : Enum
 {
     public string ViewPath { get; private set; }
-    public PvRender(string ViewPath, IServiceProvider ServiceProvider) : base(ServiceProvider)
+    public PvRender(string _ViewPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
     {
-        this.ViewPath = ViewPath.TrimEnd('/', '\\');
+        ViewPath = _ViewPath.TrimEnd('/', '\\');
     }
     public IHtmlContent Render(TPvType ViewName)
     {
@@ -84,6 +83,12 @@ public class PvRender<TPvType> : PvRender where TPvType : Enum
         SetOptionFunc(NewOption);
         return Render(ViewName, NewOption);
     }
+    public IHtmlContent Render(TPvType ViewName, out PvOption<TPvType> OutOption)
+    {
+        OutOption = new PvOption<TPvType>(ViewName);
+        return BaseRender(ViewName, OutOption).Result;
+    }
+
 
     public PvResult<TPvType> Create(TPvType ViewName)
     {

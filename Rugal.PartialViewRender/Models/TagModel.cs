@@ -10,11 +10,9 @@ public enum PvNodeType
 }
 public enum PropPassType
 {
-    None,
-    Cover,
     Append,
-    CoverAll,
-    AppendAll,
+    Cover,
+    Fill,
 }
 public sealed class PvNode
 {
@@ -32,11 +30,6 @@ public sealed class PvNode
     #endregion
 
     #region Node Property
-    public PropPassType PassType
-    {
-        get => Slot.PassType;
-        set => Slot.PassType = value;
-    }
     public string SlotName
     {
         get => Slot.SlotName;
@@ -72,7 +65,7 @@ public sealed class PvNode
     public IEnumerable<PvNode> GetNodeList()
     {
         var Result = new List<PvNode>();
-        Rcs_GetNodeList(Root, Result);
+        RCS_GetNodeList(Root, Result);
 
         Result = [.. Result.OrderBy(Item => Item.Depth)];
         return Result;
@@ -97,11 +90,11 @@ public sealed class PvNode
 
         return null;
     }
-    private static void Rcs_GetNodeList(PvNode Node, List<PvNode> Output)
+    private static void RCS_GetNodeList(PvNode Node, List<PvNode> Output)
     {
         Output.Add(Node);
         foreach (var Item in Node.Children)
-            Rcs_GetNodeList(Item, Output);
+            RCS_GetNodeList(Item, Output);
     }
     #endregion
 }
@@ -109,6 +102,7 @@ public class PvPosition
 {
     public int Depth { get; set; }
     public string Id { get; set; }
+    public PvPosition() { }
     public PvPosition(int Depth, string Id)
     {
         this.Depth = Depth;

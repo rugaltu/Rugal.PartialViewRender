@@ -7,7 +7,10 @@ namespace Rugal.PartialViewRender.Tags;
 [HtmlTargetElement("pv-slot", TagStructure = TagStructure.NormalOrSelfClosing)]
 public class PvSlotTag : PvNodeTagBase
 {
-    public PropPassType PassType { get; set; }
+    public PropPassType PassType { get; set; } = PropPassType.Cover;
+    public IPvOption ExportOption { get; set; }
+    public PvSlotsSet ExportSlot { get; set; }
+    public PvAttrsSet ExportAttr { get; set; }
     public Enum Slot { get; set; }
     public PvSlotTag(IServiceProvider Provider) : base(Provider) { }
     public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -16,25 +19,30 @@ public class PvSlotTag : PvNodeTagBase
         if (Slot is null)
             return;
 
-        InitSlot();
+        InitSlot(PassType);
         InitAttributes(PassType);
         InitChildrenAttributes();
+
+        ExportOption?.Slots.Add(Slot, Node.Slot);
+        ExportOption?.Attrs.Add(Slot, Node.Attr);
+        ExportSlot?.WithFrom(Node.Slot);
+        ExportAttr?.AddFrom(Node.Attr);
+
+        ClearContent(output);
     }
     protected override void BeforeChildBuild()
     {
         base.BeforeChildBuild();
         Node.NodeType = PvNodeType.Slot;
-
-        if (PassType == PropPassType.None)
-            PassType = PropPassType.Cover;
-
-        Node.PassType = PassType;
         Node.SlotName = Slot.ToString();
     }
-    protected virtual void InitSlot()
+    protected virtual void InitSlot(PropPassType PassType)
     {
+        Node.Slot.PassType = PassType;
         if (!string.IsNullOrWhiteSpace(Content))
+        {
             Node.Slot.Content = Content;
+        }
     }
     protected virtual void InitChildrenAttributes()
     {
@@ -81,18 +89,6 @@ public class PvAttrTag : PvNodeTagBase
     {
         base.Process(context, output);
         Node.NodeType = PvNodeType.Attr;
-
-        if (PassType == PropPassType.None)
-        {
-            PassType = PropPassType.Append;
-            if (Parent != null)
-                PassType = Parent.PassType switch
-                {
-                    PropPassType.AppendAll => PropPassType.AppendAll,
-                    PropPassType.CoverAll => PropPassType.CoverAll,
-                    _ => PropPassType.Cover
-                };
-        }
 
         InitAttributes(PassType);
         output.TagName = null;

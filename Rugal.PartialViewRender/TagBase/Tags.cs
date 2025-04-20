@@ -139,8 +139,12 @@ public abstract class PvNodeTagBase : TagHelper
         foreach (var Attr in RenderAttr)
         {
             var AttrName = Attr.Key;
+
+            if (Attr.Value.PassType == PropPassType.Fill && Output.Attributes.ContainsName(AttrName))
+                continue;
+
             var MergeAttrs = new List<string>();
-            if (AnyAppend(Attr.Value.PassType))
+            if (Attr.Value.PassType == PropPassType.Append)
             {
                 if (Output.Attributes.TryGetAttribute(AttrName, out var GetAttr))
                     MergeAttrs.Add(GetAttr.Value.ToString());
@@ -158,7 +162,7 @@ public abstract class PvNodeTagBase : TagHelper
         if (RenderSlot is null || !RenderSlot.HasContent())
             return;
 
-        if (AnyCover(RenderSlot.PassType))
+        if (RenderSlot.PassType == PropPassType.Cover)
         {
             Output.Content.SetHtmlContent(RenderSlot.Content);
             return;
@@ -167,18 +171,15 @@ public abstract class PvNodeTagBase : TagHelper
         Output.Content.AppendHtml(Content);
         Output.Content.AppendHtml(RenderSlot.Content);
     }
+    protected virtual void ClearContent(TagHelperOutput Output)
+    {
+        Output.TagName = null;
+        ChildrenContent = null;
+        Content = null;
+        Output.Content.SetContent(null);
+    }
     #endregion
 
-    #region Protected Process
-    protected virtual bool AnyCover(PropPassType PassType)
-    {
-        return PassType == PropPassType.Cover || PassType == PropPassType.CoverAll;
-    }
-    protected virtual bool AnyAppend(PropPassType PassType)
-    {
-        return PassType == PropPassType.Append || PassType == PropPassType.AppendAll;
-    }
-    #endregion
 
     #region Item Control
     protected virtual TModel GetItem<TModel>(string Key) where TModel : class
@@ -253,9 +254,18 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
                 SetChildrenOption(Option);
                 SetPassOption(Option);
             });
+        var RenderContent = RenderView.Content;
+
+        PvName = RenderView.Option.PvName;
+        if (!string.IsNullOrWhiteSpace(PvName))
+            Node.Attr.Add("pv-name", new PvAttrsValue(PvName, PropPassType.Cover));
+
+        RenderAttributes(RenderView.Option.ParentAttrs);
+        if (RenderView.Option.ParentTag is not null)
+            Output.TagName = RenderView.Option.ParentTag;
 
         RenderAttributes(Node.Attr);
-        output.Content.SetHtmlContent(RenderView.Content);
+        output.Content.SetHtmlContent(RenderContent);
     }
     protected override void Setup()
     {
@@ -270,11 +280,15 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
             if (OptionNode.NodeType != PvNodeType.Slot || OptionNode.SlotName is null)
                 continue;
 
-            if (OptionNode.Slot.HasContent())
-                Option.Slots.Add(OptionNode.SlotName, OptionNode.Slot);
+            var AddSlot = OptionNode.Slot;
+            var AddAttr = OptionNode.Attr;
 
-            if (OptionNode.Attr.Any())
-                Option.Attrs.Add(OptionNode.SlotName, OptionNode.Attr);
+            var HasSlot = Option.Slots.ContainsKey(AddSlot.SlotName);
+
+            Option.Slots.Add(AddSlot.SlotName, AddSlot);
+            
+            if (AddAttr.Any())
+                Option.Attrs.Add(OptionNode.SlotName, AddAttr);
         }
         return Option;
     }
