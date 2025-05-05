@@ -238,6 +238,7 @@ public class PvResult<TPvType> where TPvType : Enum
     {
         this.Render = Render;
         this.PvType = PvType;
+        Option = new PvOption<TPvType>(PvType);
     }
     public PvResult<TPvType> WithOption(PvOption<TPvType> Option)
     {
