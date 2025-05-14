@@ -21,8 +21,6 @@ public abstract class PvNodeTagBase : TagHelper
     #endregion
 
     #region Key Stoer
-    protected const string KEY_TREE = "Tree";
-    protected const string KEY_CURRENT_POSITION = "CurrentPosition";
     protected List<string> ExceptPassAttribute { get; private set; }
     #endregion
 
@@ -59,13 +57,13 @@ public abstract class PvNodeTagBase : TagHelper
         Setup();
         InitNode();
         InitLayout();
-        SetItem(KEY_CURRENT_POSITION, Node);
+        SetItem(PvEnvs.KEY_NODE_CURRENT_POSITION, Node);
         BeforeChildBuild();
         ChildrenContent = await output.GetChildContentAsync();
         Content = ChildrenContent.GetContent().Trim();
 
         if (!Node.IsRoot)
-            SetItem(KEY_CURRENT_POSITION, Parent);
+            SetItem(PvEnvs.KEY_NODE_CURRENT_POSITION, Parent);
 
         base.Process(context, output);
     }
@@ -98,14 +96,14 @@ public abstract class PvNodeTagBase : TagHelper
             Id = Context.UniqueId,
         };
 
-        if (HasItem(KEY_TREE))
+        if (HasItem(PvEnvs.KEY_NODE_TREE))
         {
             Tree.AddChildrenTo(Node, CurrentPosition.Depth, CurrentPosition.Id);
             return;
         }
 
         Node.InitRoot();
-        SetItem(KEY_TREE, Node);
+        SetItem(PvEnvs.KEY_NODE_TREE, Node);
     }
     protected virtual void InitAttributes(PropPassType DefualtPassType)
     {
@@ -215,17 +213,17 @@ public abstract class PvNodeTagBase : TagHelper
     #region Get Property Function
     private PvNode GetTree()
     {
-        var Result = GetItem<PvNode>(KEY_TREE);
+        var Result = GetItem<PvNode>(PvEnvs.KEY_NODE_TREE);
         if (Result is null)
-            throw new Exception($"{KEY_TREE} is null, please get tree after Init() method");
+            throw new Exception($"{PvEnvs.KEY_NODE_TREE} is null, please get tree after Init() method");
 
         return Result;
     }
     private PvNode GetCurrentPosition()
     {
-        var Result = GetItem<PvNode>(KEY_CURRENT_POSITION);
+        var Result = GetItem<PvNode>(PvEnvs.KEY_NODE_CURRENT_POSITION);
         if (Result is null)
-            throw new Exception($"{KEY_CURRENT_POSITION} is null, please get tree after Init() method");
+            throw new Exception($"{PvEnvs.KEY_NODE_CURRENT_POSITION} is null, please get tree after Init() method");
 
         return Result;
     }
@@ -253,6 +251,7 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
                 Option.WithPvName(PvName);
                 SetChildrenOption(Option);
                 SetPassOption(Option);
+                SetDefaultContent(Option);
             });
 
         var RenderContent = RenderView.Content;
@@ -304,7 +303,7 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
         if (string.IsNullOrWhiteSpace(Content))
             return Option;
 
-        //Option.Slots.Add("_default", new PvSlotsSet());
+        Option.Slots.Add(PvEnvs.KEY_DEFAULT_SLOT, new PvSlotsSet(PvEnvs.KEY_DEFAULT_SLOT, Content));
         return Option;
     }
 }

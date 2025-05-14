@@ -19,7 +19,6 @@ public abstract class PvOption
         return new PvOption<TPvType>(PvType);
     }
 }
-
 public class PvOption<TPvType> : IPvOption where TPvType : Enum
 {
     protected string _PvName;
@@ -85,6 +84,14 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
     {
         SlotSet.PassType = PropPassType.Fill;
         Slots.Add(SlotName, SlotSet);
+        return this;
+    }
+    public PvOption<TPvType> FillSlotFromDefault(Enum SlotName)
+    {
+        if (!Slots.TryGet(PvEnvs.KEY_DEFAULT_SLOT, out var DefaultSlot))
+            return this;
+
+        FillSlot(SlotName, DefaultSlot);
         return this;
     }
     public PvOption<TPvType> MultiSlot(Enum SlotName, string SlotValue)
@@ -167,7 +174,6 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         }
         return false;
     }
-
     public PvOption<TPvType> WithParentTag(string ParentTag)
     {
         this.ParentTag = ParentTag;
@@ -178,7 +184,6 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         ParentTag = Option.ParentTag;
         return this;
     }
-
     public PvOption<TPvType> AddParentAttr(string AttrName, string AttrValue, PropPassType PassType = PropPassType.Append)
     {
         AddParentAttr(AttrName, new PvAttrsValue(AttrValue, PassType));
@@ -210,7 +215,6 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         ParentAttrs.Add(AttrName, AttrValue);
         return this;
     }
-
     public PvOption<TPvType> AddParentAttrFrom(PvAttrsSet Attrs)
     {
         foreach (var Attr in Attrs)
@@ -238,8 +242,6 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         Page.ViewContext.HttpContext.Items[SavePvType] = Slots;
         return this;
     }
-
-
     public IHtmlContent RenderSlot(Enum SlotName, string NullContent = null)
     {
         var SlotValue = Slots.Get(SlotName);
