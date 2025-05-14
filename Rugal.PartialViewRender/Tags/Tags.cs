@@ -11,6 +11,7 @@ public class PvSlotTag : PvNodeTagBase
     public IPvOption ExportOption { get; set; }
     public PvSlotsSet ExportSlot { get; set; }
     public PvAttrsSet ExportAttr { get; set; }
+    public object PassData { get; set; }
     public Enum Slot { get; set; }
     public PvSlotTag(IServiceProvider Provider) : base(Provider) { }
     public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -39,6 +40,7 @@ public class PvSlotTag : PvNodeTagBase
     protected virtual void InitSlot(PropPassType PassType)
     {
         Node.Slot.PassType = PassType;
+        Node.Slot.PassData = PassData;
         if (!string.IsNullOrWhiteSpace(Content))
         {
             Node.Slot.Content = Content;

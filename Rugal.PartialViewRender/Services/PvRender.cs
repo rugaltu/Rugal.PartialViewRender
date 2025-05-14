@@ -29,8 +29,10 @@ public abstract class PvRender
 
         var ViewEngine = ServiceProvider.GetRequiredService<IRazorViewEngine>();
         ViewName = ConvertViewName(ViewPath, ViewName);
-        var GetView = ViewEngine
-            .GetView(ViewName, ViewName, false) ?? throw new Exception($"{ViewName} is not found");
+        
+        var GetView = ViewEngine.GetView(ViewName, ViewName, false);
+        if (GetView?.View is null)
+            throw new Exception($"{ViewName} is not found");
 
         ArgumentNullException.ThrowIfNull(Option, nameof(Option));
 

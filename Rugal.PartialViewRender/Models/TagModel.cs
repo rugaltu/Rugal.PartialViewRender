@@ -10,9 +10,10 @@ public enum PvNodeType
 }
 public enum PropPassType
 {
-    Append,
     Cover,
     Fill,
+    Append,
+    Multi,
 }
 public sealed class PvNode
 {

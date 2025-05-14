@@ -73,37 +73,28 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
     }
     public PvOption<TPvType> AddSlot(Enum SlotName, PvSlotsSet SlotSet)
     {
-        if (!Slots.ContainsKey(SlotName) || SlotSet.PassType == PropPassType.Cover)
-        {
-            Slots.Add(SlotName, SlotSet);
-            return this;
-        }
-
-        if (SlotSet.PassType == PropPassType.Fill)
-        {
-            if (Slots.ContainsKey(SlotName))
-                return this;
-        }
-
-        var GetSlot = Slots.Get(SlotName);
-        GetSlot.Content += $" {SlotSet.Content}";
+        Slots.Add(SlotName, SlotSet);
         return this;
     }
     public PvOption<TPvType> FillSlot(Enum SlotName, string SlotValue)
     {
-        FillSlot(SlotName, new PvSlotsSet()
-        {
-            Content = SlotValue,
-            PassType = PropPassType.Append,
-            SlotName = SlotName.ToString()
-        });
+        FillSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue));
         return this;
     }
     public PvOption<TPvType> FillSlot(Enum SlotName, PvSlotsSet SlotSet)
     {
-        if (HasSlot(SlotName))
-            return this;
-
+        SlotSet.PassType = PropPassType.Fill;
+        Slots.Add(SlotName, SlotSet);
+        return this;
+    }
+    public PvOption<TPvType> MultiSlot(Enum SlotName, string SlotValue)
+    {
+        MultiSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue));
+        return this;
+    }
+    public PvOption<TPvType> MultiSlot(Enum SlotName, PvSlotsSet SlotSet)
+    {
+        SlotSet.PassType = PropPassType.Multi;
         Slots.Add(SlotName, SlotSet);
         return this;
     }
@@ -122,26 +113,61 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
     {
         return Slots.TryGet(SlotName, out Slot);
     }
+    public bool TryGetSlotMulti(Enum SlotName, out PvSlotsSet[] MultiSlot)
+    {
+        var Result = Slots.TryGet(SlotName, out var Slot);
+        MultiSlot = Slot?.ToMulti();
+        return Result;
+    }
     public bool TryGetSlotContent(Enum SlotName, out string Content)
     {
+        Content = null;
         if (Slots.TryGet(SlotName, out var Slot) && Slot.HasContent())
         {
             Content = Slot.Content;
             return true;
         }
-        Content = null;
+        return false;
+    }
+    public bool TryGetSlotContentMulti(Enum SlotName, out string[] Contents)
+    {
+        Contents = null;
+        if (Slots.TryGet(SlotName, out var Slot))
+        {
+            var GetContents = Slot.ToMultiContent();
+            if (GetContents.Length > 0)
+            {
+                Contents = GetContents;
+                return true;
+            }
+        }
         return false;
     }
     public bool TryGetSlotRender(Enum SlotName, out IHtmlContent RenderContent)
     {
+        RenderContent = null;
         if (Slots.TryGet(SlotName, out var Slot) && Slot.HasContent())
         {
             RenderContent = Slot.RenderContent;
             return true;
         }
-        RenderContent = null;
         return false;
     }
+    public bool TryGetSlotRenderMulti(Enum SlotName, out IHtmlContent[] RenderContents)
+    {
+        RenderContents = null;
+        if (Slots.TryGet(SlotName, out var Slot))
+        {
+            var GetRenderContents = Slot.ToMultiRenderContent();
+            if (GetRenderContents.Length > 0)
+            {
+                RenderContents = GetRenderContents;
+                return true;
+            }
+        }
+        return false;
+    }
+
     public PvOption<TPvType> WithParentTag(string ParentTag)
     {
         this.ParentTag = ParentTag;

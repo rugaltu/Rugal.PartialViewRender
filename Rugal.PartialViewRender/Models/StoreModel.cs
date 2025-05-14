@@ -157,8 +157,10 @@ public abstract class StoreBase<TStoreValue, TStore> where TStore : StoreBase<TS
 public class PvSlotsSet
 {
     public PropPassType PassType { get; set; }
+    public object PassData { get; set; }
     public string SlotName { get; set; }
     public string Content { get; set; }
+    public List<PvSlotsSet> MultiSlots { get; set; } = [];
     public IHtmlContent RenderContent => new HtmlString(Content);
     public bool HasContent() => !string.IsNullOrWhiteSpace(Content?.Trim());
     public PvSlotsSet() { }
@@ -176,7 +178,6 @@ public class PvSlotsSet
     {
         if (PassType == PropPassType.Cover)
         {
-            PassType = Source.PassType;
             SlotName = Source.SlotName;
             Content = Source.Content;
         }
@@ -190,6 +191,29 @@ public class PvSlotsSet
                 Content = Source.Content;
         }
         return this;
+    }
+    public PvSlotsSet[] ToMulti()
+    {
+        var AllSlots = new List<PvSlotsSet> { this };
+        AllSlots.AddRange(MultiSlots);
+        return [.. AllSlots];
+    }
+    public string[] ToMultiContent()
+    {
+        var Result = ToMulti()
+            .Select(Item => Item.Content)
+            .Where(Item => !string.IsNullOrWhiteSpace(Item))
+            .ToArray();
+
+        return Result;
+    }
+    public IHtmlContent[] ToMultiRenderContent()
+    {
+        var Result = ToMultiContent()
+            .Select(Item => new HtmlString(Item))
+            .ToArray();
+
+        return Result;
     }
 }
 public class PvSlotsStore : StoreBase<PvSlotsSet, PvSlotsStore>
@@ -209,6 +233,16 @@ public class PvSlotsStore : StoreBase<PvSlotsSet, PvSlotsStore>
             {
                 var CurrentSlot = Get(StoreValue.SlotName);
                 CurrentSlot.WithFrom(StoreValue, PropPassType.Append);
+            }
+        }
+        else if (StoreValue.PassType == PropPassType.Multi)
+        {
+            if (!HasSlot)
+                base.BaseAdd(StoreKey, StoreValue);
+            else
+            {
+                var CurrentSlot = Get(StoreValue.SlotName);
+                CurrentSlot.MultiSlots.Add(StoreValue);
             }
         }
     }

@@ -1,7 +1,13 @@
+using Rugal.PartialViewRender.Extentions;
+using Rugal.PartialViewRender.Test.PartialView.Dtvl;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddRazorRuntimeCompilation();
+
+builder.Services.AddPartialViews<DtvlPv>(builder.Configuration);
 
 var app = builder.Build();
 

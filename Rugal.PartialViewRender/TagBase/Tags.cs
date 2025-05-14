@@ -254,8 +254,8 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
                 SetChildrenOption(Option);
                 SetPassOption(Option);
             });
-        var RenderContent = RenderView.Content;
 
+        var RenderContent = RenderView.Content;
         PvName = RenderView.Option.PvName;
         if (!string.IsNullOrWhiteSpace(PvName))
             Node.Attr.Add("pv-name", new PvAttrsValue(PvName, PropPassType.Cover));
@@ -282,11 +282,8 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
 
             var AddSlot = OptionNode.Slot;
             var AddAttr = OptionNode.Attr;
-
-            var HasSlot = Option.Slots.ContainsKey(AddSlot.SlotName);
-
             Option.Slots.Add(AddSlot.SlotName, AddSlot);
-            
+
             if (AddAttr.Any())
                 Option.Attrs.Add(OptionNode.SlotName, AddAttr);
         }
@@ -300,6 +297,14 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
         if (PassAttr is not null)
             Option.Attrs.AddFrom(PassAttr);
 
+        return Option;
+    }
+    private PvOption<TPvs> SetDefaultContent(PvOption<TPvs> Option)
+    {
+        if (string.IsNullOrWhiteSpace(Content))
+            return Option;
+
+        //Option.Slots.Add("_default", new PvSlotsSet());
         return Option;
     }
 }

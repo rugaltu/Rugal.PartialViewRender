@@ -1,7 +1,18 @@
 ﻿@model PvOption<DtvlPv>
+@{
 
+}
 <section>
-    <pv-tag tag="div"
+    @{
+        if (Model.TryGetSlotRenderMulti(ButtonSlot.Title, out var TitleRenders))
+        {
+            foreach (var Item in TitleRenders)
+            {
+                @Item
+            }
+        }
+    }
+    @* <pv-tag tag="div"
             class="text-white"
             pass-attr="Model.GetAttr(ButtonSlot.Title)"
             pass-slot="Model.GetSlot(ButtonSlot.Title)">
@@ -12,5 +23,5 @@
             class="fw-bolder btn">
         @Model.RenderSlot(ButtonSlot.Icon)
         @Model.RenderSlot(ButtonSlot.Text)
-    </pv-tag>
+    </pv-tag> *@
 </section>
