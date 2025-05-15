@@ -5,6 +5,7 @@ namespace Rugal.PartialViewRender.Models;
 public abstract class StoreBase<TStoreValue, TStore> where TStore : StoreBase<TStoreValue, TStore>, new()
 {
     protected Dictionary<string, TStoreValue> Store { get; set; } = [];
+    public virtual string[] Keys => [.. Store.Keys];
     public virtual TStore Add(string StoreKey, TStoreValue StoreValue)
     {
         BaseAdd(StoreKey, StoreValue);
@@ -156,11 +157,13 @@ public abstract class StoreBase<TStoreValue, TStore> where TStore : StoreBase<TS
 }
 public class PvSlotsSet
 {
+    public string PvName { get; set; }
     public PropPassType PassType { get; set; }
     public object PassData { get; set; }
     public string SlotName { get; set; }
     public string Content { get; set; }
     public List<PvSlotsSet> MultiSlots { get; set; } = [];
+    public PvAttrsSet Attrs { get; set; } = new PvAttrsSet();
     public IHtmlContent RenderContent => new HtmlString(Content);
     public bool HasContent() => !string.IsNullOrWhiteSpace(Content?.Trim());
     public PvSlotsSet() { }
@@ -178,6 +181,7 @@ public class PvSlotsSet
     {
         if (PassType == PropPassType.Cover)
         {
+            PvName = Source.PvName;
             SlotName = Source.SlotName;
             Content = Source.Content;
         }
@@ -185,10 +189,16 @@ public class PvSlotsSet
         {
             Content += Source.Content;
         }
-        else
+        else if (PassType == PropPassType.Fill)
         {
             if (string.IsNullOrWhiteSpace(Content?.Trim()))
                 Content = Source.Content;
+            if (string.IsNullOrWhiteSpace(PvName))
+                PvName = Source.PvName;
+        }
+        else if (PassType == PropPassType.Multi)
+        {
+            MultiSlots.Add(Source);
         }
         return this;
     }

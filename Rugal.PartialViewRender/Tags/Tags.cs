@@ -7,6 +7,7 @@ namespace Rugal.PartialViewRender.Tags;
 [HtmlTargetElement("pv-slot", TagStructure = TagStructure.NormalOrSelfClosing)]
 public class PvSlotTag : PvNodeTagBase
 {
+    public string PvName { get; set; }
     public PropPassType PassType { get; set; } = PropPassType.Cover;
     public IPvOption ExportOption { get; set; }
     public PvSlotsSet ExportSlot { get; set; }
@@ -41,29 +42,19 @@ public class PvSlotTag : PvNodeTagBase
     {
         Node.Slot.PassType = PassType;
         Node.Slot.PassData = PassData;
+        Node.Slot.Attrs = Node.Attr;
         if (!string.IsNullOrWhiteSpace(Content))
         {
             Node.Slot.Content = Content;
         }
     }
-    protected virtual void InitChildrenAttributes()
-    {
-        foreach (var OptionNode in Children)
-        {
-            if (OptionNode.NodeType != PvNodeType.Attr)
-                continue;
 
-            if (OptionNode.Attr is null)
-                continue;
-
-            Node.Attr.AddFrom(OptionNode.Attr);
-        }
-    }
 }
 
 [HtmlTargetElement("pv-tag", TagStructure = TagStructure.NormalOrSelfClosing)]
 public class PvTag : PvNodeTagBase
 {
+    public string PvName { get; set; }
     public string Tag { get; set; }
     public PvAttrsSet PassAttr { get; set; }
     public PvSlotsSet PassSlot { get; set; }
@@ -72,6 +63,11 @@ public class PvTag : PvNodeTagBase
     {
         base.Process(context, output);
         Node.NodeType = PvNodeType.Tag;
+
+        InitChildrenAttributes();
+
+        if (!string.IsNullOrWhiteSpace(PvName))
+            Node.Attr.Add("pv-name", new PvAttrsValue(PvName, PropPassType.Cover));
 
         RenderAttributes(Node.Attr);
         RenderAttributes(PassAttr);
@@ -87,10 +83,14 @@ public class PvAttrTag : PvNodeTagBase
 {
     public PvAttrTag(IServiceProvider Provider) : base(Provider) { }
     public PropPassType PassType { get; set; }
+    public PvAttrsSet PassAttr { get; set; }
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
         base.Process(context, output);
         Node.NodeType = PvNodeType.Attr;
+
+        if (PassAttr is not null)
+            Node.Attr.AddFrom(PassAttr);
 
         InitAttributes(PassType);
         output.TagName = null;

@@ -129,6 +129,19 @@ public abstract class PvNodeTagBase : TagHelper
 
         Node.Attr.AddFrom(LayoutValue);
     }
+    protected virtual void InitChildrenAttributes()
+    {
+        foreach (var OptionNode in Children)
+        {
+            if (OptionNode.NodeType != PvNodeType.Attr)
+                continue;
+
+            if (OptionNode.Attr is null)
+                continue;
+
+            Node.Attr.AddFrom(OptionNode.Attr);
+        }
+    }
     protected virtual void RenderAttributes(PvAttrsSet RenderAttr)
     {
         if (RenderAttr is null || !RenderAttr.Any())
