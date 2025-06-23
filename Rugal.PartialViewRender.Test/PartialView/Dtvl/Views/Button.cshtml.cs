@@ -6,5 +6,9 @@
         Icon,
         Text,
         Title,
+
+        SizeA,
+        SizeB,
+        SizeC,
     }
 }

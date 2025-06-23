@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Rugal.PartialViewRender.Services;
+using System;
 
 namespace Rugal.PartialViewRender.Models;
 
@@ -25,6 +26,7 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
     public string PvName => _PvName ?? PvType.ToString();
     public bool HasPvName => !string.IsNullOrWhiteSpace(PvName);
     public string ParentTag { get; protected set; }
+    public PvSlotsStore GlobalSlots { get; protected set; } = new();
     public PvSlotsStore Slots { get; protected set; } = new();
     public PvAttrsStore Attrs { get; protected set; } = new();
     public PvAttrsSet ParentAttrs { get; protected set; } = new();
@@ -42,18 +44,42 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         _PvName = PvName;
         return this;
     }
-    public PvSlotsSet GetSlot(Enum SlotName) => Slots.Get(SlotName);
-    public PvSlotsSet GetSlotCreate(Enum SlotName)
+    public PvSlotsSet GetSlot(Enum SlotName, bool CreateIfNotExist = false)
     {
         if (HasSlot(SlotName))
-            return GetSlot(SlotName);
+            return Slots.Get(SlotName);
 
-        var NewSlot = new PvSlotsSet()
+        if (CreateIfNotExist)
         {
-            SlotName = SlotName.ToString(),
-        };
-        AddSlot(SlotName, NewSlot);
-        return NewSlot;
+            var NewSlot = new PvSlotsSet()
+            {
+                SlotName = SlotName.ToString(),
+            };
+            AddSlot(SlotName, NewSlot);
+            return NewSlot;
+        }
+        return null;
+    }
+    public PvSlotsSet OrderFirstSlot(params Enum[] SlotNames)
+    {
+        return Slots.OrderFirst(SlotNames);
+    }
+    public PvSlotsSet OrderFirstSlot<TEnum>(IEnumerable<TEnum> SlotNames) where TEnum : Enum
+    {
+        return Slots.OrderFirst(SlotNames);
+    }
+    public PvSlotsSet OrderLastSlot(params Enum[] SlotNames)
+    {
+        return Slots.OrderLast(SlotNames);
+    }
+    public PvSlotsSet OrderLastSlot<TEnum>(IEnumerable<TEnum> SlotNames) where TEnum : Enum
+    {
+        return Slots.OrderLast(SlotNames);
+    }
+    public PvOption<TPvType> AddSlot(Enum SlotName, PvSlotsSet SlotSet)
+    {
+        Slots.Add(SlotName, SlotSet);
+        return this;
     }
     public PvOption<TPvType> AddSlot(Enum SlotName, string SlotValue, PropPassType PassType = PropPassType.Append)
     {
@@ -70,8 +96,19 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         AddSlot(SlotName, SlotValue.ToString(), PassType);
         return this;
     }
-    public PvOption<TPvType> AddSlot(Enum SlotName, PvSlotsSet SlotSet)
+    public PvOption<TPvType> AddSlot(Enum SlotName, PropPassType PassType = PropPassType.Append)
     {
+        AddSlot(SlotName, new PvSlotsSet()
+        {
+            Content = null,
+            PassType = PassType,
+            SlotName = SlotName.ToString()
+        });
+        return this;
+    }
+    public PvOption<TPvType> FillSlot(Enum SlotName, PvSlotsSet SlotSet)
+    {
+        SlotSet.PassType = PropPassType.Fill;
         Slots.Add(SlotName, SlotSet);
         return this;
     }
@@ -80,10 +117,33 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         FillSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue));
         return this;
     }
-    public PvOption<TPvType> FillSlot(Enum SlotName, PvSlotsSet SlotSet)
+    public PvOption<TPvType> FillSlot(Enum SlotName, IHtmlContent SlotValue)
     {
-        SlotSet.PassType = PropPassType.Fill;
-        Slots.Add(SlotName, SlotSet);
+        FillSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue.ToString()));
+        return this;
+    }
+    public PvOption<TPvType> FillSlot(Enum SlotName)
+    {
+        FillSlot(SlotName, new PvSlotsSet(SlotName.ToString(), null));
+        return this;
+    }
+    public PvOption<TPvType> FillSlotAny<TEnum>(TEnum SlotName, PvSlotsSet SlotSet, IEnumerable<TEnum> AnySlots) where TEnum : Enum
+    {
+        var SlotKeys = AnySlots.Select(Item => Item.ToString());
+        if (Slots.Any(Item => SlotKeys.Contains(Item.SlotName)))
+            return this;
+
+        FillSlot(SlotName, SlotSet);
+        return this;
+    }
+    public PvOption<TPvType> FillSlotAny<TEnum>(TEnum SlotName, string SlotValue, IEnumerable<TEnum> AnySlots) where TEnum : Enum
+    {
+        FillSlotAny(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue), AnySlots);
+        return this;
+    }
+    public PvOption<TPvType> FillSlotAny<TEnum>(TEnum SlotName, IEnumerable<TEnum> AnySlots) where TEnum : Enum
+    {
+        FillSlotAny(SlotName, new PvSlotsSet(SlotName.ToString(), null), AnySlots);
         return this;
     }
     public PvOption<TPvType> FillSlotFromDefault(Enum SlotName)
@@ -94,85 +154,36 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         FillSlot(SlotName, DefaultSlot);
         return this;
     }
-    public PvOption<TPvType> MultiSlot(Enum SlotName, string SlotValue)
-    {
-        MultiSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue));
-        return this;
-    }
     public PvOption<TPvType> MultiSlot(Enum SlotName, PvSlotsSet SlotSet)
     {
         SlotSet.PassType = PropPassType.Multi;
         Slots.Add(SlotName, SlotSet);
         return this;
     }
-    public string GetSlotContent(Enum SlotName) => Slots.Get(SlotName)?.Content;
-    public PvSlotsStore QuerySlot<TSlot>(IEnumerable<TSlot> SlotNames) where TSlot : Enum
-        => Slots.Query(SlotNames);
-    public PvSlotsStore QuerySlot(params Enum[] SlotNames) => Slots.Query(SlotNames);
-    public PvSlotsStore QuerySlot<TSlot>(params TSlot[] SlotNames) where TSlot : Enum =>
-        Slots.Query(SlotNames);
-    public bool HasSlot(Enum SlotName) => Slots.ContainsKey(SlotName);
-    public bool HasSlotAny<TSlot>(params TSlot[] SlotNames) where TSlot : Enum =>
-        HasSlotAny(SlotNames.Select(Item => Item.ToString()));
-    public bool HasSlotAny(IEnumerable<string> SlotNames)
-        => Slots.Any(Item => SlotNames.Contains(Item.SlotName));
-    public bool TryGetSlot(Enum SlotName, out PvSlotsSet Slot)
+    public PvOption<TPvType> MultiSlot(Enum SlotName, string SlotValue)
     {
-        return Slots.TryGet(SlotName, out Slot);
+        MultiSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue));
+        return this;
     }
-    public bool TryGetSlotMulti(Enum SlotName, out PvSlotsSet[] MultiSlot)
+    public PvOption<TPvType> MultiSlot(Enum SlotName, IHtmlContent SlotValue)
     {
-        var Result = Slots.TryGet(SlotName, out var Slot);
-        MultiSlot = Slot?.ToMulti();
-        return Result;
+        MultiSlot(SlotName, new PvSlotsSet(SlotName.ToString(), SlotValue.ToString()));
+        return this;
     }
-    public bool TryGetSlotContent(Enum SlotName, out string Content)
+    public PvOption<TPvType> MultiSlot(Enum SlotName)
     {
-        Content = null;
-        if (Slots.TryGet(SlotName, out var Slot) && Slot.HasContent())
-        {
-            Content = Slot.Content;
-            return true;
-        }
-        return false;
+        MultiSlot(SlotName, new PvSlotsSet(SlotName.ToString(), null));
+        return this;
     }
-    public bool TryGetSlotContentMulti(Enum SlotName, out string[] Contents)
+    public PvOption<TPvType> AddGlobalSlots(PvSlotsStore Store)
     {
-        Contents = null;
-        if (Slots.TryGet(SlotName, out var Slot))
-        {
-            var GetContents = Slot.ToMultiContent();
-            if (GetContents.Length > 0)
-            {
-                Contents = GetContents;
-                return true;
-            }
-        }
-        return false;
+        GlobalSlots.AddFrom(Store);
+        return this;
     }
-    public bool TryGetSlotRender(Enum SlotName, out IHtmlContent RenderContent)
+    public PvOption<TPvType> UseGlobalSlots()
     {
-        RenderContent = null;
-        if (Slots.TryGet(SlotName, out var Slot) && Slot.HasContent())
-        {
-            RenderContent = Slot.RenderContent;
-            return true;
-        }
-        return false;
-    }
-    public bool TryGetSlotRenderMulti(Enum SlotName, out IHtmlContent[] RenderContents)
-    {
-        RenderContents = null;
-        if (Slots.TryGet(SlotName, out var Slot))
-        {
-            var GetRenderContents = Slot.ToMultiRenderContent();
-            if (GetRenderContents.Length > 0)
-            {
-                RenderContents = GetRenderContents;
-                return true;
-            }
-        }
-        return false;
+        Slots.AddFrom(GlobalSlots);
+        return this;
     }
     public PvOption<TPvType> WithParentTag(string ParentTag)
     {
@@ -242,6 +253,7 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
         Page.ViewContext.HttpContext.Items[SavePvType] = Slots;
         return this;
     }
+    public string GetSlotContent(Enum SlotName) => Slots.Get(SlotName)?.Content;
     public IHtmlContent RenderSlot(Enum SlotName, string NullContent = null)
     {
         var SlotValue = Slots.Get(SlotName);
@@ -250,11 +262,74 @@ public class PvOption<TPvType> : IPvOption where TPvType : Enum
 
         return new HtmlString(NullContent);
     }
+    public bool HasSlot(Enum SlotName) => Slots.ContainsKey(SlotName);
+    public bool HasSlotAny<TSlot>(params TSlot[] SlotNames) where TSlot : Enum => HasSlotAny(SlotNames.Select(Item => Item.ToString()));
+    public bool HasSlotAny(IEnumerable<string> SlotNames) => Slots.Any(Item => SlotNames.Contains(Item.SlotName));
+    public bool TryGetSlot(Enum SlotName, out PvSlotsSet Slot)
+    {
+        return Slots.TryGet(SlotName, out Slot);
+    }
+    public bool TryGetSlotMulti(Enum SlotName, out PvSlotsSet[] MultiSlot)
+    {
+        var Result = Slots.TryGet(SlotName, out var Slot);
+        MultiSlot = Slot?.ToMulti();
+        return Result;
+    }
+    public bool TryGetSlotContent(Enum SlotName, out string Content)
+    {
+        Content = null;
+        if (Slots.TryGet(SlotName, out var Slot) && Slot.HasContent())
+        {
+            Content = Slot.Content;
+            return true;
+        }
+        return false;
+    }
+    public bool TryGetSlotContentMulti(Enum SlotName, out string[] Contents)
+    {
+        Contents = null;
+        if (Slots.TryGet(SlotName, out var Slot))
+        {
+            var GetContents = Slot.ToMultiContent();
+            if (GetContents.Length > 0)
+            {
+                Contents = GetContents;
+                return true;
+            }
+        }
+        return false;
+    }
+    public bool TryGetSlotRender(Enum SlotName, out IHtmlContent RenderContent)
+    {
+        RenderContent = null;
+        if (Slots.TryGet(SlotName, out var Slot) && Slot.HasContent())
+        {
+            RenderContent = Slot.RenderContent;
+            return true;
+        }
+        return false;
+    }
+    public bool TryGetSlotRenderMulti(Enum SlotName, out IHtmlContent[] RenderContents)
+    {
+        RenderContents = null;
+        if (Slots.TryGet(SlotName, out var Slot))
+        {
+            var GetRenderContents = Slot.ToMultiRenderContent();
+            if (GetRenderContents.Length > 0)
+            {
+                RenderContents = GetRenderContents;
+                return true;
+            }
+        }
+        return false;
+    }
     public PvAttrsSet GetAttr(string AttrName) => Attrs.Get(AttrName);
     public PvAttrsSet GetAttr(Enum AttrName) => Attrs.Get(AttrName);
-    public PvAttrsStore QueryAttr(params Enum[] SlotNames) => Attrs.Query(SlotNames);
-    public PvAttrsStore QueryAttr<TSlotName>(params TSlotName[] SlotNames) where TSlotName : Enum
-        => Attrs.Query(SlotNames);
+    public PvSlotsStore QuerySlotStore<TSlot>(IEnumerable<TSlot> SlotNames) where TSlot : Enum => Slots.QueryStore(SlotNames);
+    public PvSlotsStore QuerySlotStore(params Enum[] SlotNames) => Slots.QueryStore(SlotNames);
+    public PvSlotsStore QuerySlotStore<TSlot>(params TSlot[] SlotNames) where TSlot : Enum => Slots.QueryStore(SlotNames);
+    public PvAttrsStore QueryAttrStore(params Enum[] SlotNames) => Attrs.QueryStore(SlotNames);
+    public PvAttrsStore QueryAttrStore<TSlotName>(params TSlotName[] SlotNames) where TSlotName : Enum => Attrs.QueryStore(SlotNames);
 }
 public class PvResult<TPvType> where TPvType : Enum
 {

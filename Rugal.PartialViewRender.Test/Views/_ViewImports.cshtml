@@ -1,5 +1,10 @@
 ﻿@using Rugal.PartialViewRender.Test
 @using Rugal.PartialViewRender.Test.Models
+@using Rugal.PartialViewRender.Models
+@using Rugal.PartialViewRender.Test.PartialView.Dtvl
+@using Rugal.PartialViewRender.Test.PartialView.Dtvl.View
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Rugal.PartialViewRender.Test
 @addTagHelper *, Rugal.PartialViewRender
+
+@inject PvGlobalSlotsStore<DtvlPv> GlobalSlotsStore

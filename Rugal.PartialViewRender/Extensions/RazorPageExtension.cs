@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc.Razor;
 using Rugal.PartialViewRender.Models;
 
-namespace Rugal.PartialViewRender.Extentions;
+namespace Rugal.PartialViewRender.Extensions;
 
-public static class RazorPageExtention
+public static class RazorPageExtension
 {
     public static PvSlotsSet LoadSlot<TSlot>(this RazorPage Page, TSlot Slot, bool CreateIfNull = true)
         where TSlot : Enum
@@ -61,5 +61,4 @@ public static class RazorPageExtention
         SaveSlot(Page, Slot, SetSlot);
         return true;
     }
-
 }

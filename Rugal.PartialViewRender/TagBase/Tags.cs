@@ -59,13 +59,13 @@ public abstract class PvNodeTagBase : TagHelper
         InitLayout();
         SetItem(PvEnvs.KEY_NODE_CURRENT_POSITION, Node);
         BeforeChildBuild();
-        ChildrenContent = await output.GetChildContentAsync();
+        ChildrenContent = await Output.GetChildContentAsync();
         Content = ChildrenContent.GetContent().Trim();
 
         if (!Node.IsRoot)
             SetItem(PvEnvs.KEY_NODE_CURRENT_POSITION, Parent);
 
-        base.Process(context, output);
+        base.Process(context, Output);
     }
 
     #region Protected Method
@@ -277,7 +277,7 @@ public abstract class PvTagBase<TPvs> : PvNodeTagBase where TPvs : Enum
             Output.TagName = RenderView.Option.ParentTag;
 
         RenderAttributes(Node.Attr);
-        output.Content.SetHtmlContent(RenderContent);
+        Output.Content.SetHtmlContent(RenderContent);
     }
     protected override void Setup()
     {

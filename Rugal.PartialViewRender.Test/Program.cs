@@ -1,5 +1,7 @@
-using Rugal.PartialViewRender.Extentions;
+using Rugal.PartialViewRender.Extensions;
+using Rugal.PartialViewRender.Models;
 using Rugal.PartialViewRender.Test.PartialView.Dtvl;
+using Rugal.PartialViewRender.Test.PartialView.Dtvl.View;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews()
     .AddRazorRuntimeCompilation();
 
-builder.Services.AddPartialViews<DtvlPv>(builder.Configuration);
+builder.Services.AddPartialViews<DtvlPv>(builder.Configuration.GetSection("Pvs:DtvlPv"));
 
 var app = builder.Build();
 

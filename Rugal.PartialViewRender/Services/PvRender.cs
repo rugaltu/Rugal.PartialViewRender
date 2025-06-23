@@ -8,16 +8,17 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Rugal.PartialViewRender.Models;
 
 namespace Rugal.PartialViewRender.Services;
 
 public abstract class PvRender
 {
-    private readonly IServiceProvider ServiceProvider;
-    public PvRender(IServiceProvider _ServiceProvider)
+    protected readonly IServiceProvider ServiceProvider;
+    public PvRender(IServiceProvider ServiceProvider)
     {
-        ServiceProvider = _ServiceProvider;
+        this.ServiceProvider = ServiceProvider;
     }
     protected async Task<IHtmlContent> RenderAsync<TPvType>(string ViewName, string ViewPath, PvOption<TPvType> Option) where TPvType : Enum
     {
@@ -29,7 +30,7 @@ public abstract class PvRender
 
         var ViewEngine = ServiceProvider.GetRequiredService<IRazorViewEngine>();
         ViewName = ConvertViewName(ViewPath, ViewName);
-        
+
         var GetView = ViewEngine.GetView(ViewName, ViewName, false);
         if (GetView?.View is null)
             throw new Exception($"{ViewName} is not found");
@@ -67,9 +68,9 @@ public abstract class PvRender
 public class PvRender<TPvType> : PvRender where TPvType : Enum
 {
     public string ViewPath { get; private set; }
-    public PvRender(string _ViewPath, IServiceProvider _ServiceProvider) : base(_ServiceProvider)
+    public PvRender(string ViewPath, IServiceProvider ServiceProvider) : base(ServiceProvider)
     {
-        ViewPath = _ViewPath.TrimEnd('/', '\\');
+        this.ViewPath = ViewPath.TrimEnd('/', '\\');
     }
     public IHtmlContent Render(TPvType ViewName)
     {
@@ -90,8 +91,6 @@ public class PvRender<TPvType> : PvRender where TPvType : Enum
         OutOption = new PvOption<TPvType>(ViewName);
         return BaseRender(ViewName, OutOption).Result;
     }
-
-
     public PvResult<TPvType> Create(TPvType ViewName)
     {
         return new PvResult<TPvType>(this, ViewName);
@@ -107,21 +106,23 @@ public class PvRender<TPvType> : PvRender where TPvType : Enum
         SetOptionFunc(NewOption);
         return Create(ViewName, NewOption);
     }
-
     public Task<IHtmlContent> FromAsync(TPvType ViewName, string PvName = null)
     {
         var SetOption = new PvOption<TPvType>(ViewName, PvName);
         return BaseRender(ViewName, SetOption);
     }
-    public Task<IHtmlContent> FromAsync(TPvType ViewName, string PvName, out PvOption<TPvType> OutOption)
+    public Task<IHtmlContent> FromAsync(TPvType ViewName, string PvName, out    PvOption<TPvType> OutOption)
     {
         OutOption = new PvOption<TPvType>(ViewName, PvName);
         return BaseRender(ViewName, OutOption);
     }
-
     private Task<IHtmlContent> BaseRender(TPvType PvType, PvOption<TPvType> SetOption)
     {
         SetOption ??= new PvOption<TPvType>(PvType);
+        var GlobalSlotsStore = ServiceProvider.GetService<PvGlobalSlotsStore<TPvType>>();
+        if (GlobalSlotsStore.TryGet(PvType, out var SlotsStore))
+            SetOption.AddGlobalSlots(SlotsStore);
+
         return RenderAsync(PvType.ToString(), ViewPath, SetOption);
     }
     private Task<IHtmlContent> BaseRender(TPvType PvType)

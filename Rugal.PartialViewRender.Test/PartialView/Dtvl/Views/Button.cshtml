@@ -1,6 +1,7 @@
 ﻿@model PvOption<DtvlPv>
 @{
-    Model.FillSlotFromDefault(ButtonSlot.Title);
+    Model.FillSlotFromDefault(ButtonSlot.Title)
+        .UseGlobalSlots();
 }
 <section>
     @{
