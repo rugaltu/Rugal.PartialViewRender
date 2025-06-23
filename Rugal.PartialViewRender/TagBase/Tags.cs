@@ -75,6 +75,7 @@ public abstract class PvNodeTagBase : TagHelper
         {
             "^pv-.*",
             "^pass-.*",
+            "^export-.*",
             "^slot$",
         };
         ExceptPassAttribute.AddRange(DefaultExceptPass);

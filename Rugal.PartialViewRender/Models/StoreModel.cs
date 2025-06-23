@@ -282,6 +282,13 @@ public class PvSlotsSet
 
         return Result;
     }
+    public TSlotType ToSlotType<TSlotType>() where TSlotType : Enum
+    {
+        if (Enum.TryParse(typeof(TSlotType), SlotName, true, out var SlotType))
+            return (TSlotType)SlotType;
+
+        throw new Exception($"{SlotName} cannot parse be {typeof(TSlotType).FullName}");
+    }
 }
 public class PvSlotsStore : StoreBase<PvSlotsSet, PvSlotsStore>
 {
