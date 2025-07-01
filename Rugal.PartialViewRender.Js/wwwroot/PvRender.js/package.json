@@ -1,7 +1,0 @@
-{
-  "name": "@rugal.tu/pvrender",
-  "publishConfig": {
-    "access": "public"
-  },
-  "version": "1.4.3"
-}
