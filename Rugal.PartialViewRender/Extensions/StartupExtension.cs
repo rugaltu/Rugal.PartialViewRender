@@ -7,10 +7,12 @@ namespace Rugal.PartialViewRender.Extensions;
 
 public static class StartupExtension
 {
-    public static IServiceCollection AddPartialViews<TPvs>(this IServiceCollection Services, IConfigurationSection Configuration)
+    public static IServiceCollection AddPartialViews<TPvs>(this IServiceCollection Services, string Path)
         where TPvs : Enum
     {
-        var Path = Configuration.Value;
+        if (string.IsNullOrWhiteSpace(Path))
+            throw new ArgumentNullException(nameof(Path));
+
         Services.AddHttpContextAccessor();
         Services.AddScoped(Provider =>
         {
@@ -19,6 +21,12 @@ public static class StartupExtension
         });
         Services.AddScoped<PvLayoutStore>();
         Services.AddScoped<PvGlobalSlotsStore<TPvs>>();
+        return Services;
+    }
+    public static IServiceCollection AddPartialViews<TPvs>(this IServiceCollection Services, IConfigurationSection Configuration)
+        where TPvs : Enum
+    {
+        AddPartialViews<TPvs>(Services, Configuration.Value);
         return Services;
     }
 }
